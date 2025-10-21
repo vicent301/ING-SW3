@@ -8,12 +8,16 @@ import (
 	"strconv"
 )
 
+// 📦 Obtener productos (con búsqueda opcional)
 func GetProducts(c *gin.Context) {
-	products, err := dao.GetAllProducts()
+	search := c.Query("search") // Captura ?search=valor
+
+	products, err := dao.SearchProducts(search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, products)
 }
 

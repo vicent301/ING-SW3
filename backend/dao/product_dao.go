@@ -69,3 +69,33 @@ func GetProductByID(id uint) (*domain.Product, error) {
 		ImageURL:    e.ImageURL,
 	}, nil
 }
+
+// 🔍 Buscar productos por palabra clave
+func SearchProducts(keyword string) ([]domain.Product, error) {
+	var entities []Product
+
+	query := database.DB
+
+	if keyword != "" {
+		likePattern := "%" + keyword + "%"
+		query = query.Where("name LIKE ? OR description LIKE ?", likePattern, likePattern)
+	}
+
+	if err := query.Find(&entities).Error; err != nil {
+		return nil, err
+	}
+
+	var products []domain.Product
+	for _, e := range entities {
+		products = append(products, domain.Product{
+			ID:          e.ID,
+			Name:        e.Name,
+			Description: e.Description,
+			Price:       e.Price,
+			Stock:       e.Stock,
+			ImageURL:    e.ImageURL,
+		})
+	}
+
+	return products, nil
+}
