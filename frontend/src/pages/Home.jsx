@@ -1,28 +1,63 @@
 import { Link } from "react-router-dom";
+import bg from "../assets/skater-bg.png"; // tu imagen
 
 export default function Home() {
   return (
-    <section
-      className="h-[90vh] bg-cover bg-center flex items-center justify-center text-center"
+    <div
+      className="relative flex flex-col items-center justify-center min-h-screen text-center overflow-hidden"
       style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1528701800489-20be3c9671f0?auto=format&fit=crop&w=1920&q=80')",
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="bg-black bg-opacity-60 p-12 rounded-3xl max-w-2xl">
-        <h1 className="text-5xl font-extrabold mb-4 text-white">
-          Bienvenido a <span className="text-green-500">ZapasStore</span> 👟
+      {/* 🔹 Capa oscura translúcida real */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.65)", // <- opacidad fuerte
+          backdropFilter: "blur(2px)", // <- desenfoque sutil
+          zIndex: 0,
+        }}
+      ></div>
+
+      {/* 🔹 Contenido visible */}
+      <div className="relative z-10 max-w-3xl mx-auto px-6 text-center"
+     style={{ color: "rgb(230,230,230)" }}> 
+
+        <h1
+          className="text-6xl md:text-7xl font-bold mb-6 drop-shadow-lg"
+          style={{
+            fontFamily: "'Anton', sans-serif",
+            letterSpacing: "2px",
+          }}
+        >
+          Bienvenido a ZapaStore 
         </h1>
-        <p className="text-gray-300 mb-8 text-lg">
+
+        <p
+          className="text-lg md:text-xl mb-8 text-gray-200"
+          style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontWeight: "400",
+          }}
+        >
           Encontrá tus zapatillas favoritas al mejor precio y en un solo lugar.
         </p>
+
         <Link
           to="/productos"
-          className="bg-green-500 text-black px-8 py-3 rounded-full font-semibold text-lg hover:bg-green-400 transition"
+          className="inline-block bg-white text-black px-8 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+          style={{
+            fontFamily: "'Oswald', sans-serif",
+            letterSpacing: "1px",
+          }}
         >
           Ver Catálogo
         </Link>
       </div>
-    </section>
+    </div>
   );
 }

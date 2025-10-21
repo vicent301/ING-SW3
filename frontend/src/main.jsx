@@ -11,7 +11,8 @@ function App() {
   return (
     <BrowserRouter>
       {/* Contenedor principal */}
-      <div className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans overflow-x-hidden">
+      <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans overflow-x-hidden">
+
         <Navbar />
 
         {/* Contenido centrado */}
