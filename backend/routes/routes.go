@@ -12,32 +12,25 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		// Auth
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
-		api.GET("/ping", controllers.Ping)
 
-		// Productos públicos
 		api.GET("/products", controllers.GetProducts)
 		api.GET("/products/:id", controllers.GetProductByID)
 
-		// CRUD protegido (solo admin en futuro)
-		protected := api.Group("/products")
+		protected := api.Group("/")
 		protected.Use(middleware.AuthMiddleware())
 		{
-			protected.POST("/", controllers.CreateProduct)
-			protected.PUT("/:id", controllers.UpdateProduct)
-			protected.DELETE("/:id", controllers.DeleteProduct)
-		}
+			//usuario
+			protected.GET("/me", controllers.GetProfile)
+			// Carrito
+			protected.GET("/cart", controllers.GetCart)
+			protected.POST("/cart/add", controllers.AddToCart)
+			protected.DELETE("/cart/remove", controllers.RemoveFromCart)
+			protected.DELETE("/cart/clear", controllers.ClearCart)
+			//productos
+			protected.POST("/products", controllers.CreateProduct)
 
-		// Perfil protegido
-		user := api.Group("/user")
-		user.Use(middleware.AuthMiddleware())
-		{
-			user.GET("/me", func(c *gin.Context) {
-				email, _ := c.Get("email")
-				c.JSON(200, gin.H{"message": "Bienvenido!", "email": email})
-			})
 		}
 	}
 

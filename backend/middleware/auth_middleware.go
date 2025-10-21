@@ -19,7 +19,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token inválido"})

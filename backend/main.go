@@ -1,17 +1,22 @@
 package main
 
 import (
+	"backend/dao"
 	"backend/database"
 	"backend/routes"
 )
 
 func main() {
-	// Conexión a MySQL
+	// Conectamos la BD
 	database.Connect()
 
-	// Rutas
-	r := routes.SetupRouter()
+	// Ejecutamos las migraciones (ahora sí podemos importar dao)
+	dao.AutoMigrateUser()
+	dao.AutoMigrateProduct()
+	dao.AutoMigrateCart()
+	dao.AutoMigrateOrder()
 
-	// Puerto 8080
+	// Levantamos el servidor
+	r := routes.SetupRouter()
 	r.Run(":8080")
 }

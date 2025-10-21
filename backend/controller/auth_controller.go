@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"backend/database"
-	"backend/models"
+	"backend/dao"
+	"backend/domain"
 	"backend/utils"
 	"net/http"
 
@@ -12,24 +12,15 @@ import (
 
 // Registro de usuario
 func Register(c *gin.Context) {
-	var user models.User
+	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Hashear contraseña
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	err := dao.CreateUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al encriptar contraseña"})
-		return
-	}
-	user.Password = string(hashedPassword)
-
-	// Guardar usuario
-	result := database.DB.Create(&user)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo registrar el usuario"})
 		return
 	}
 
@@ -47,21 +38,18 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	result := database.DB.Where("email = ?", credentials.Email).First(&user)
-	if result.Error != nil {
+	user, err := dao.GetUserByEmail(credentials.Email)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuario no encontrado"})
 		return
 	}
 
 	// Comparar contraseñas
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
-	if err != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)) != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Contraseña incorrecta"})
 		return
 	}
 
-	// Generar token JWT
 	token, err := utils.GenerateJWT(user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al generar token"})
@@ -71,5 +59,22 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login exitoso",
 		"token":   token,
+	})
+}
+
+// Perfil de usuario (ruta protegida)
+func GetProfile(c *gin.Context) {
+	email, _ := c.Get("email")
+
+	user, err := dao.GetUserByEmail(email.(string))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
 	})
 }
