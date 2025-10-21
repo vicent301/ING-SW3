@@ -22,3 +22,10 @@
   "stock": 25,
   "image_url": "https://images.puma.com/image/upload/t_prod_ss/f_auto,q_auto,fl_lossy/PumaRSX3.jpg"
 }
+
+para crear usuario:
+{
+  "name": "simon barrale",
+  "email": "simon@example.com",
+  "password": "simon123"
+}

@@ -31,6 +31,9 @@ func SetupRouter() *gin.Engine {
 			//productos
 			protected.POST("/products", controllers.CreateProduct)
 
+			//ordenes
+			protected.POST("/orders/create", controllers.CreateOrder)
+			protected.GET("/orders", controllers.GetOrders)
 		}
 	}
 
