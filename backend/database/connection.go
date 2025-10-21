@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"backend/config"
+	"backend/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -20,5 +21,9 @@ func Connect() {
 	}
 
 	fmt.Println("✅ Conexión exitosa a MySQL")
+
+	// Auto-migrar modelos
+	db.AutoMigrate(&models.User{})
+
 	DB = db
 }
