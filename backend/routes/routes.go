@@ -13,10 +13,7 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("ok"))
-		})
+		
 
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
