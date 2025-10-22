@@ -19,7 +19,7 @@ stages:
           # --- Backend (Go) ---
           - task: GoTool@0
             inputs:
-              version: '1.22'        # Ajusta tu versión
+              version: '1.21.6'        # Ajusta tu versión
           - script: |
               cd backend
               go mod download
