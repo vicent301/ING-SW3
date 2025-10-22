@@ -1,9 +1,13 @@
-import { Link } from "react-router-dom";
-import { ShoppingCart, User, Search } from "lucide-react";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingCart, User, Search, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getProfile, getCart } from "../services/api";
 
 export default function Navbar() {
   const [hovered, setHovered] = useState(null);
+  const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
+  const navigate = useNavigate();
 
   const categories = [
     {
@@ -20,6 +24,27 @@ export default function Navbar() {
     },
   ];
 
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const userData = await getProfile();
+        setUser(userData);
+
+        const cartData = await getCart();
+        setCartCount(cartData.items?.length || 0);
+      } catch (err) {
+        // Si no hay token o falla la autenticación, no hace nada
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    navigate("/login");
+  };
+
   return (
     <header
       className="sticky top-0 z-50 w-full backdrop-blur-md shadow-md border-b border-neutral-300"
@@ -32,18 +57,19 @@ export default function Navbar() {
       <nav className="max-w-[1600px] mx-auto px-16 py-5 flex justify-between items-center">
         {/* Logo */}
         <Link
-  to="/"
-  className="text-4xl font-extrabold tracking-tight transition duration-300 hover:opacity-90"
-  style={{
-    background: "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    fontFamily: "'Anton', sans-serif",
-    letterSpacing: "1px",
-  }}
->
-  ZapaStore
-</Link>
+          to="/"
+          className="text-4xl font-extrabold tracking-tight transition duration-300 hover:opacity-90"
+          style={{
+            background:
+              "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            fontFamily: "'Anton', sans-serif",
+            letterSpacing: "1px",
+          }}
+        >
+          ZapaStore
+        </Link>
 
         {/* Categorías */}
         <ul className="hidden md:flex gap-12 text-base font-semibold uppercase tracking-wide">
@@ -84,10 +110,22 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Login */}
-          <Link to="/login" className="hover:text-gray-700 transition">
-            <User size={24} />
-          </Link>
+          {/* Usuario */}
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-sm">Hola, {user.name}</span>
+              <button onClick={handleLogout} title="Cerrar sesión">
+                <LogOut
+                  size={22}
+                  className="text-gray-700 hover:text-black transition"
+                />
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="hover:text-gray-700 transition">
+              <User size={24} />
+            </Link>
+          )}
 
           {/* Carrito */}
           <Link
@@ -95,9 +133,11 @@ export default function Navbar() {
             className="hover:text-gray-700 transition relative"
           >
             <ShoppingCart size={24} />
-            <span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5">
-              2
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5">
+                {cartCount}
+              </span>
+            )}
           </Link>
         </div>
       </nav>

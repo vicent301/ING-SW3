@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	DBUser     = "root"
-	DBPassword = "root"
+	DBPassword = "renzo4040"
 	DBHost     = "localhost"
 	DBPort     = "3306"
 	DBName     = "tienda"
