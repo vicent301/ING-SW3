@@ -1,0 +1,264 @@
+trigger:
+  - main
+
+# Variables globales mínimas (pueden ir vacías; usaremos Variable Groups)
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+  # =========================
+  # 1) BUILD
+  # =========================
+  - stage: Build
+    displayName: "Build Front + Back"
+    jobs:
+      - job: BuildJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          # --- Backend (Go) ---
+          - task: GoTool@0
+            inputs:
+              version: '1.22'        # Ajusta tu versión
+          - script: |
+              cd backend
+              go mod download
+              go build -o appweb-backend
+            displayName: 'Build Go backend'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: 'backend'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
+              # El zip incluirá el binario y (si tienes) carpeta 'public' o configs.
+            displayName: 'Empaquetar backend'
+
+          # --- Frontend (React) ---
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'    # Ajusta si usas otra versión
+          - script: |
+              cd frontend
+              npm ci
+              # REACT_APP_API_URL se inyectará en QA/PROD, en Build no seteamos
+              npm run build
+            displayName: 'Build React'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: 'frontend/build'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
+            displayName: 'Empaquetar frontend'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              ArtifactName: 'drop'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            displayName: 'Publicar artefactos'
+
+  # =========================
+  # 2) QA
+  # =========================
+  - stage: Deploy_QA
+    displayName: "Deploy QA"
+    dependsOn: Build
+    variables:
+      - group: VG_QA     # <- Variable Group QA
+    jobs:
+      - deployment: QADeploy
+        displayName: 'Deploy a QA'
+        environment: 'QA'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+
+                # --- BACKEND QA ---
+                - task: AzureWebApp@1
+                  displayName: 'Deploy Backend QA'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameBack)'
+                    package: '$(Pipeline.Workspace)/drop/backend.zip'
+
+
+                # Setear App Settings (DB, etc.) por si cambian
+                - task: AzureAppServiceSettings@1
+                  displayName: 'App Settings Backend QA'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameBack)'
+                    appSettings: |
+                      [
+                        {"name":"DB_HOST","value":"$(DB_HOST)","slotSetting":false},
+                        {"name":"DB_PORT","value":"$(DB_PORT)","slotSetting":false},
+                        {"name":"DB_NAME","value":"$(DB_NAME)","slotSetting":false},
+                        {"name":"DB_USER","value":"$(DB_USER)","slotSetting":false},
+                        {"name":"DB_PASSWORD","value":"$(DB_PASSWORD)","slotSetting":false},
+                        {"name":"DB_SSLMODE","value":"$(DB_SSLMODE)","slotSetting":false},
+                        {"name":"PORT","value":"8080","slotSetting":false}
+                      ]
+
+                # Health check backend
+                - script: |
+                    BACK_URL="https://$(webAppNameBack).azurewebsites.net/healthz"
+                    echo "Checking $BACK_URL"
+                    for i in {1..10}; do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
+                      echo "Intento $i => $code"
+                      if [ "$code" = "200" ]; then
+                        exit 0
+                      fi
+                      sleep 5
+                    done
+                    echo "Health check backend FAILED"
+                    exit 1
+                  displayName: 'Health check Backend QA'
+
+                # --- FRONTEND QA ---
+                # Volvemos a construir el front con la variable REACT_APP_API_URL de QA
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: '18.x'
+                - script: |
+                    cd frontend
+                    echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    npm ci
+                    REACT_APP_API_URL=$(REACT_APP_API_URL) npm run build
+                  displayName: 'Build React con vars QA'
+
+                - task: ArchiveFiles@2
+                  inputs:
+                    rootFolderOrFile: 'frontend/build'
+                    includeRootFolder: false
+                    archiveType: 'zip'
+                    archiveFile: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
+                  displayName: 'Empaquetar frontend QA'
+
+                - task: AzureWebApp@1
+                  displayName: 'Deploy Frontend QA'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameFront)'
+                    package: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
+
+                # Health check frontend
+                - script: |
+                    FRONT_URL="https://$(webAppNameFront).azurewebsites.net/"
+                    echo "Checking $FRONT_URL"
+                    for i in {1..10}; do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
+                      echo "Intento $i => $code"
+                      if [ "$code" = "200" ]; then
+                        exit 0
+                      fi
+                      sleep 5
+                    done
+                    echo "Health check frontend FAILED"
+                    exit 1
+                  displayName: 'Health check Frontend QA'
+
+  # =========================
+  # 3) PRODUCCIÓN (con aprobación)
+  # =========================
+  - stage: Deploy_Prod
+    displayName: "Deploy Producción"
+    dependsOn: Deploy_QA
+    variables:
+      - group: VG_PROD   # <- Variable Group PROD
+    jobs:
+      - deployment: ProdDeploy
+        displayName: 'Deploy a Producción'
+        environment: 'Production'   # <- este env tiene aprobación manual
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+
+                # BACKEND PROD
+                - task: AzureWebApp@1
+                  displayName: 'Deploy Backend PROD'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameBack)'
+                    package: '$(Pipeline.Workspace)/drop/backend.zip'
+
+                - task: AzureAppServiceSettings@1
+                  displayName: 'App Settings Backend PROD'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameBack)'
+                    appSettings: |
+                      [
+                        {"name":"DB_HOST","value":"$(DB_HOST)","slotSetting":false},
+                        {"name":"DB_PORT","value":"$(DB_PORT)","slotSetting":false},
+                        {"name":"DB_NAME","value":"$(DB_NAME)","slotSetting":false},
+                        {"name":"DB_USER","value":"$(DB_USER)","slotSetting":false},
+                        {"name":"DB_PASSWORD","value":"$(DB_PASSWORD)","slotSetting":false},
+                        {"name":"DB_SSLMODE","value":"$(DB_SSLMODE)","slotSetting":false},
+                        {"name":"PORT","value":"8080","slotSetting":false}
+                      ]
+
+                - script: |
+                    BACK_URL="https://$(webAppNameBack).azurewebsites.net/healthz"
+                    echo "Checking $BACK_URL"
+                    for i in {1..10}; do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
+                      echo "Intento $i => $code"
+                      if [ "$code" = "200" ]; then
+                        exit 0
+                      fi
+                      sleep 5
+                    done
+                    echo "Health check backend PROD FAILED"
+                    exit 1
+                  displayName: 'Health check Backend PROD'
+
+                # FRONTEND PROD (rebuild con URL de PROD)
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: '18.x'
+                - script: |
+                    cd frontend
+                    echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    npm ci
+                    REACT_APP_API_URL=$(REACT_APP_API_URL) npm run build
+                  displayName: 'Build React con vars PROD'
+
+                - task: ArchiveFiles@2
+                  inputs:
+                    rootFolderOrFile: 'frontend/build'
+                    includeRootFolder: false
+                    archiveType: 'zip'
+                    archiveFile: '$(Pipeline.Workspace)/drop/frontend-prod.zip'
+                  displayName: 'Empaquetar frontend PROD'
+
+                - task: AzureWebApp@1
+                  displayName: 'Deploy Frontend PROD'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appName: '$(webAppNameFront)'
+                    package: '$(Pipeline.Workspace)/drop/frontend-prod.zip'
+
+                - script: |
+                    FRONT_URL="https://$(webAppNameFront).azurewebsites.net/"
+                    echo "Checking $FRONT_URL"
+                    for i in {1..10}; do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
+                      echo "Intento $i => $code"
+                      if [ "$code" = "200" ]; then
+                        exit 0
+                      fi
+                      sleep 5
+                    done
+                    echo "Health check frontend PROD FAILED"
+                    exit 1
+                  displayName: 'Health check Frontend PROD'
