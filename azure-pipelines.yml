@@ -213,7 +213,7 @@ stages:
                       ]
 
                 - script: |
-                    BACK_URL="https://$(webAppNameBack).azurewebsites.net/healthz"
+                    BACK_URL="https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..10}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
