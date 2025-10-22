@@ -3,7 +3,6 @@ package routes
 import (
 	"backend/controller"
 	"backend/middleware"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
