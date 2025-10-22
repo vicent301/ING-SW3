@@ -44,11 +44,11 @@ stages:
               npm ci
               # REACT_APP_API_URL se inyectará en QA/PROD, en Build no seteamos
               npm run build
-            displayName: 'Build React'
+            displayName: 'Build Front en Vite'
 
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: 'frontend/build'
+              rootFolderOrFile: 'frontend/dist'
               includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
