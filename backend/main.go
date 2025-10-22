@@ -4,25 +4,38 @@ import (
 	"backend/dao"
 	"backend/database"
 	"backend/routes"
-	"net/http"
+	"github.com/gin-gonic/gin"
+	"log"
+	"os"
 )
 
 func main() {
 	// Conectamos la BD
 	database.Connect()
 
-	// Ejecutamos las migraciones (ahora sí podemos importar dao)
+	// Ejecutamos las migraciones
 	dao.AutoMigrateUser()
 	dao.AutoMigrateProduct()
 	dao.AutoMigrateCart()
 	dao.AutoMigrateOrder()
 
-		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+	// Tomamos el puerto desde Azure (o 8080 local)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	// Configuramos el router principal
+	r := routes.SetupRouter()
+
+	// Endpoint de healthz para el pipeline
+	r.GET("/healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	// Levantamos el servidor
-	r := routes.SetupRouter()
-	r.Run(":8080")
+	log.Printf("Servidor escuchando en puerto %s...", port)
+	err := r.Run(":" + port)
+	if err != nil {
+		log.Fatalf("Error al iniciar el servidor: %v", err)
+	}
 }
