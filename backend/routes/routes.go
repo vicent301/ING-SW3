@@ -1,7 +1,9 @@
 package routes
 
 import (
-	controllers "backend/controller"
+	"backend/controller"
+	"backend/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,7 +12,29 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		api.GET("/ping", controllers.Ping)
+		api.POST("/register", controllers.Register)
+		api.POST("/login", controllers.Login)
+
+		api.GET("/products", controllers.GetProducts)
+		api.GET("/products/:id", controllers.GetProductByID)
+
+		protected := api.Group("/")
+		protected.Use(middleware.AuthMiddleware())
+		{
+			//usuario
+			protected.GET("/me", controllers.GetProfile)
+			// Carrito
+			protected.GET("/cart", controllers.GetCart)
+			protected.POST("/cart/add", controllers.AddToCart)
+			protected.DELETE("/cart/remove", controllers.RemoveFromCart)
+			protected.DELETE("/cart/clear", controllers.ClearCart)
+			//productos
+			protected.POST("/products", controllers.CreateProduct)
+
+			//ordenes
+			protected.POST("/orders/create", controllers.CreateOrder)
+			protected.GET("/orders", controllers.GetOrders)
+		}
 	}
 
 	return r

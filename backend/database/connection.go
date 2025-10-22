@@ -13,12 +13,11 @@ var DB *gorm.DB
 
 func Connect() {
 	dsn := config.GetDSN()
-
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("❌ Error al conectar a la base de datos:", err)
 	}
-
 	fmt.Println("✅ Conexión exitosa a MySQL")
+
 	DB = db
 }
