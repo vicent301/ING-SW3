@@ -13,6 +13,11 @@ stages:
     displayName: "Build Front + Back"
     jobs:
       - job: BuildJob
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        path: APP_WEB
+
         pool:
           vmImage: 'ubuntu-latest'
         steps:
