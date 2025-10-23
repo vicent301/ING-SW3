@@ -151,12 +151,16 @@ stages:
                     echo "📄 Contenido:"
                     ls -la
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
-                    export VITE_API_URL= https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api
 
                     cd frontend
                     npm ci
                     npm run build
                   displayName: 'Build React con vars QA'
+
+                - script: |
+                    echo '{"apiUrl": "https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net"}' > frontend/dist/config.json
+                    echo "✅ Archivo config.json QA generado"
+                  displayName: 'crear config.json QA'
 
                 - task: ArchiveFiles@2
                   inputs:
@@ -166,10 +170,6 @@ stages:
                     archiveFile: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
                   displayName: 'Empaquetar frontend QA'
 
-                - task: settingQA@0
-                  displayName: 'Setear el config.json para QA'
-                - script: |
-                    echo '{"apiUrl": "https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api"}' > frontend/dist/config.json
 
                 - task: AzureWebApp@1
                   displayName: 'Deploy Frontend QA'
@@ -273,11 +273,15 @@ stages:
                     versionSpec: '18.x'
                 - script: |
                     cd frontend
-                    export VITE_API_URL=https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
                     npm ci
                     npm run build
                   displayName: 'Build React con vars PROD'
+
+                - script: |
+                    echo '{"apiUrl": "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api"}' > frontend/dist/config.json
+                    echo "✅ Archivo config.json PROD generado"
+                  displayName: 'crear config.json PROD'
 
                 - task: ArchiveFiles@2
                   inputs:
