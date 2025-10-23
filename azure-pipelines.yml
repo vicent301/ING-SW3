@@ -89,6 +89,10 @@ stages:
           runOnce:
             deploy:
               steps:
+                - checkout: self
+                  clean: true
+                  persistCredentials: true
+
                 - download: current
                   artifact: drop
 
