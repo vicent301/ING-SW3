@@ -1,6 +1,19 @@
 trigger:
   - main
 
+resources:
+  repositories:
+    - repository: self
+      type: git
+      name: APP_WEB
+      ref: main
+      checkoutOptions:
+        clean: true
+        submodules: false
+      # Clonar en la subcarpeta APP_WEB para respetar tu estructura
+      path: APP_WEB
+
+
 # Variables globales mínimas (pueden ir vacías; usaremos Variable Groups)
 variables:
   buildConfiguration: 'Release'
@@ -13,11 +26,6 @@ stages:
     displayName: "Build Front + Back"
     jobs:
       - job: BuildJob
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        path: APP_WEB
-
         pool:
           vmImage: 'ubuntu-latest'
         steps:
