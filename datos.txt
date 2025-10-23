@@ -15,13 +15,13 @@
   "image_url": "https://static.nike.com/a/images/t_prod_ss/w_960,c_limit,f_auto/airmax270.jpg"
 }
 
-{
-  "name": "Puma RS-X³",
-  "description": "Zapatillas urbanas con estilo retro-futurista y suela de goma resistente.",
-  "price": 115.75,
-  "stock": 25,
-  "image_url": "https://images.puma.com/image/upload/t_prod_ss/f_auto,q_auto,fl_lossy/PumaRSX3.jpg"
-}
+    {
+      "name": "Puma RS-X³",
+      "description": "Zapatillas urbanas con estilo retro-futurista y suela de goma resistente.",
+      "price": 115.75,
+      "stock": 25,
+      "image_url": "https://images.puma.com/image/upload/t_prod_ss/f_auto,q_auto,fl_lossy/PumaRSX3.jpg"
+    }
 
 para crear usuario:
 {

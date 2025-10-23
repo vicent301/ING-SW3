@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "http://localhost:8080",
+      "/api": "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net",
     },
     historyApiFallback: true, // 👈 esto asegura que las rutas vuelvan a index.html
   },
