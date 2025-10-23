@@ -27,7 +27,7 @@ function Layout() {
         <div className="w-full max-w-7xl mx-auto">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/productos" element={<Productos />} />
+            <Route path="/products" element={<Productos />} />
             <Route path="/carrito" element={<Carrito />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

@@ -53,7 +53,7 @@ export async function addToCart(productId, quantity = 1) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch("/api/cart/add", {
+  const res = await fetch(`${API_URL}/cart/add`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -70,7 +70,7 @@ export async function getCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch("/api/cart", {
+  const res = await fetch(`${API_URL}/cart`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Error al obtener carrito");
@@ -82,7 +82,7 @@ export async function removeFromCart(productId) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch("/api/cart/remove", {
+  const res = await fetch(`${API_URL}/cart/remove`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export async function clearCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch("/api/cart/clear", {
+  const res = await fetch(`${API_URL}/cart/clear`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

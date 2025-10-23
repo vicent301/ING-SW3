@@ -166,6 +166,11 @@ stages:
                     archiveFile: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
                   displayName: 'Empaquetar frontend QA'
 
+                - task: settingQA@0
+                  displayName: 'Setear el config.json para QA'
+                - script: |
+                    echo '{"apiUrl": "https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api"}' > frontend/dist/config.json
+
                 - task: AzureWebApp@1
                   displayName: 'Deploy Frontend QA'
                   inputs:
@@ -173,6 +178,8 @@ stages:
 
                     appName: '$(webAppNameFront)'
                     package: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
+
+
 
                 # Health check frontend
                 - script: |
@@ -253,6 +260,12 @@ stages:
                     echo "Health check backend PROD FAILED"
                     exit 1
                   displayName: 'Health check Backend PROD'
+
+
+                - task: settingPROD@0
+                  displayName: 'Setear el config.json para prod'
+                - script: |
+                    echo '{"apiUrl": "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api"}' > frontend/dist/config.json
 
                 # FRONTEND PROD (rebuild con URL de PROD)
                 - task: NodeTool@0

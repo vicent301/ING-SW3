@@ -48,7 +48,7 @@ export default function Home() {
         </p>
 
         <Link
-          to="/productos"
+          to="/products"
           className="inline-block bg-white text-black px-8 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
           style={{
             fontFamily: "'Oswald', sans-serif",
