@@ -15,7 +15,7 @@ func GetDSN() string {
 
 	// DSN (Data Source Name)
 	// Si usás Azure MySQL Flexible Server con SSL, agregá ?tls=true o &tls=preferred
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&ls=true",
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 }
 
