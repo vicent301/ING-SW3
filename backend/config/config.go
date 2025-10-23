@@ -1,72 +1,54 @@
-package database
+package config
 
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
-	gmysql "github.com/go-sql-driver/mysql" // 🔹 alias para registrar TLS
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	gmysql "github.com/go-sql-driver/mysql" // 👈 necesario para registrar TLS
 )
 
-var DB *gorm.DB
+// GetDSN genera la cadena de conexión (DSN) con soporte TLS para Azure MySQL Flexible
+func GetDSN() string {
+	// Variables de entorno (con fallback por si corrés local)
+	dbUser := getEnv("DB_USER", "root")
+	dbPassword := getEnv("DB_PASSWORD", "root")
+	dbHost := getEnv("DB_HOST", "localhost")
+	dbPort := getEnv("DB_PORT", "3306")
+	dbName := getEnv("DB_NAME", "tienda")
 
-func Connect() {
-	dbUser := os.Getenv("DBUser")
-	dbPass := os.Getenv("DBPassword")
-	dbHost := os.Getenv("DBHost")
-	dbPort := os.Getenv("DBPort")
-	dbName := os.Getenv("DBName")
-
-	// ⚙️ 1. Registrar configuración TLS requerida por Azure
+	// ⚙️ Registrar configuración TLS (necesario para Azure)
 	rootCertPool := x509.NewCertPool()
-	pem, err := ioutil.ReadFile("/etc/ssl/certs/ca-certificates.crt") // ruta estándar en Linux App Service
+	pem, err := ioutil.ReadFile("/etc/ssl/certs/ca-certificates.crt") // ruta estándar en App Service Linux
 	if err != nil {
-		log.Fatalf("❌ No se pudo leer el certificado raíz: %v", err)
+		log.Printf("⚠️ No se pudo leer certificado raíz: %v", err)
 	}
 	if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
-		log.Fatalf("❌ No se pudo agregar el certificado PEM")
+		log.Printf("⚠️ No se pudo agregar el certificado PEM")
 	}
 
 	tlsConfig := &tls.Config{
 		RootCAs:            rootCertPool,
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: true, // Azure usa certificados válidos, pero esto evita fallos intermedios
 	}
 
-	// 🔹 Registrar TLS en el driver real
 	err = gmysql.RegisterTLSConfig("azure", tlsConfig)
 	if err != nil {
-		log.Fatalf("❌ No se pudo registrar TLS config: %v", err)
+		log.Printf("⚠️ No se pudo registrar TLS config: %v", err)
 	}
 
-	// ⚙️ 2. Construir DSN compatible con Azure
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=azure",
-		dbUser, dbPass, dbHost, dbPort, dbName)
+	// ✅ DSN compatible con Azure MySQL Flexible Server
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=azure",
+		dbUser, dbPassword, dbHost, dbPort, dbName)
+}
 
-	log.Printf("Intentando conectar a: %s", dbHost)
-
-	// ⚙️ 3. Probar conexión simple
-	sqlDB, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatalf("❌ Error al abrir conexión: %v", err)
+// Helper para leer variables de entorno con valor por defecto
+func getEnv(key, fallback string) string {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
+		return value
 	}
-	defer sqlDB.Close()
-
-	err = sqlDB.Ping()
-	if err != nil {
-		log.Fatalf("❌ Error al conectar a la base de datos: %v", err)
-	}
-
-	// ⚙️ 4. Iniciar GORM con el mismo DSN
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("❌ Error al inicializar GORM: %v", err)
-	}
-
-	log.Println("✅ Conectado exitosamente a la base de datos con TLS (Azure MySQL Flexible)")
+	return fallback
 }
