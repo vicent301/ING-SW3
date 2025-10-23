@@ -51,11 +51,12 @@ stages:
           # --- Frontend (React) ---
           - task: NodeTool@0
             inputs:
-              versionSpec: '18.x'    # Ajusta si usas otra versión
+              versionSpec: '20.x'    # Ajusta si usas otra versión
           - script: |
               cd frontend
               npm ci
-              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net npm run build npm run build
+              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api 
+              npm run build
             displayName: 'Build Front en Vite'
 
           - task: ArchiveFiles@2
@@ -143,7 +144,7 @@ stages:
                 # Volvemos a construir el front con la variable REACT_APP_API_URL de QA
                 - task: NodeTool@0
                   inputs:
-                    versionSpec: '18.x'
+                    versionSpec: '20.x'
                 - script: |
                     echo "📂 Carpeta actual:"
                     pwd
@@ -261,7 +262,7 @@ stages:
                 # FRONTEND PROD (rebuild con URL de PROD)
                 - task: NodeTool@0
                   inputs:
-                    versionSpec: '18.x'
+                    versionSpec: '20.x'
                 - script: |
                     cd frontend
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
