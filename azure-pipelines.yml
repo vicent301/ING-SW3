@@ -131,7 +131,7 @@ stages:
                 - script: |
                     
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
-                    cd $APP_WEB/frontend
+                    cd APP_WEB/frontend
                     npm ci
                     npm run build
                   displayName: 'Build React con vars QA'
