@@ -174,7 +174,7 @@ stages:
 
                 # Health check frontend
                 - script: |
-                    FRONT_URL="https://$(webAppNameFront).azurewebsites.net/"
+                    FRONT_URL="https://appweb-front-qa-ctg3cwawggeag6g4.northcentralus-01.azurewebsites.net/"
                     echo "Checking $FRONT_URL"
                     for i in {1..10}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
@@ -204,6 +204,10 @@ stages:
           runOnce:
             deploy:
               steps:
+                - checkout: self
+                  clean: true
+                  persistCredentials: true
+
                 - download: current
                   artifact: drop
 
@@ -256,7 +260,7 @@ stages:
                     cd frontend
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
                     npm ci
-                    REACT_APP_API_URL=$(REACT_APP_API_URL) npm run build
+                    npm run build
                   displayName: 'Build React con vars PROD'
 
                 - task: ArchiveFiles@2
@@ -276,7 +280,7 @@ stages:
                     package: '$(Pipeline.Workspace)/drop/frontend-prod.zip'
 
                 - script: |
-                    FRONT_URL="https://$(webAppNameFront).azurewebsites.net/"
+                    FRONT_URL="https://appweb-front-prod-h7htdzbchbhsf6g2.northcentralus-01.azurewebsites.net/"
                     echo "Checking $FRONT_URL"
                     for i in {1..10}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
