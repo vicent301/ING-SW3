@@ -1,4 +1,4 @@
-const API_URL = "/api"; // gracias al proxy de vite
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // 🛍️ Productos
 export async function getProducts() {

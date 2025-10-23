@@ -151,6 +151,8 @@ stages:
                     echo "📄 Contenido:"
                     ls -la
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    export VITE_API_URL= https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api
+
                     cd frontend
                     npm ci
                     npm run build
@@ -258,6 +260,7 @@ stages:
                     versionSpec: '18.x'
                 - script: |
                     cd frontend
+                    export VITE_API_URL=https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
                     npm ci
                     npm run build
