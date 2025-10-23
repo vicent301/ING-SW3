@@ -262,11 +262,6 @@ stages:
                   displayName: 'Health check Backend PROD'
 
 
-                - task: settingPROD@0
-                  displayName: 'Setear el config.json para prod'
-                - script: |
-                    echo '{"apiUrl": "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api"}' > frontend/dist/config.json
-
                 # FRONTEND PROD (rebuild con URL de PROD)
                 - task: NodeTool@0
                   inputs:
