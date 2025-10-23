@@ -12,12 +12,11 @@ func GetDSN() string {
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "tienda")
-	dbSSLMode := getEnv("DB_SSLMODE", "false") // en Azure suele ser "require" o "true"
 
 	// DSN (Data Source Name)
 	// Si usás Azure MySQL Flexible Server con SSL, agregá ?tls=true o &tls=preferred
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s",
-		dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		dbUser, dbPassword, dbHost, dbPort, dbName)
 }
 
 // Helper para leer variables de entorno con default
