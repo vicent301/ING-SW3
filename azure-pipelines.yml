@@ -129,7 +129,7 @@ stages:
                   inputs:
                     versionSpec: '18.x'
                 - script: |
-                    cd frontend
+                    
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
                     npm ci
                     REACT_APP_API_URL=$(REACT_APP_API_URL) npm run build
