@@ -142,9 +142,12 @@ stages:
                   inputs:
                     versionSpec: '18.x'
                 - script: |
-                    
+                    echo "📂 Carpeta actual:"
+                    pwd
+                    echo "📄 Contenido:"
+                    ls -la
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
-                    cd APP_WEB/frontend
+                    cd frontend
                     npm ci
                     npm run build
                   displayName: 'Build React con vars QA'
