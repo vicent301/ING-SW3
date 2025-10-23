@@ -4,7 +4,6 @@ import (
 	"backend/dao"
 	"backend/database"
 	"backend/routes"
-	"github.com/gin-gonic/gin"
 	"log"
 	"os"
 )
@@ -21,11 +20,6 @@ func main() {
 
 	// Router principal
 	r := routes.SetupRouter()
-
-	// Endpoint de health check
-	r.GET("/healthz", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
 
 	// Obtener el puerto asignado por Azure
 	port := os.Getenv("PORT")

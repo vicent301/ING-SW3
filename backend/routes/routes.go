@@ -3,6 +3,7 @@ package routes
 import (
 	"backend/controller"
 	"backend/middleware"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,9 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api")
 	{
-		
+		api.GET("/healthz", func(c *gin.Context) {
+			c.String(http.StatusOK, "ok")
+		})
 
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
