@@ -131,13 +131,14 @@ stages:
                 - script: |
                     
                     echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    cd $(System.DefaultWorkingDirectory)/frontend
                     npm ci
-                    REACT_APP_API_URL=$(REACT_APP_API_URL) npm run build
+                    npm run build
                   displayName: 'Build React con vars QA'
 
                 - task: ArchiveFiles@2
                   inputs:
-                    rootFolderOrFile: 'frontend/build'
+                    rootFolderOrFile: 'frontend/dist'
                     includeRootFolder: false
                     archiveType: 'zip'
                     archiveFile: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
@@ -240,7 +241,7 @@ stages:
 
                 - task: ArchiveFiles@2
                   inputs:
-                    rootFolderOrFile: 'frontend/build'
+                    rootFolderOrFile: 'frontend/dist'
                     includeRootFolder: false
                     archiveType: 'zip'
                     archiveFile: '$(Pipeline.Workspace)/drop/frontend-prod.zip'
