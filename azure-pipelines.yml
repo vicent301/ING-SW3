@@ -238,7 +238,7 @@ stages:
                       ]
 
                 - script: |
-                    BACK_URL="https://appweb-api-prod-hdhgb2bmb6eyaubv.northcentralus-01.azurewebsites.net/api/healthz"
+                    BACK_URL="https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..10}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
