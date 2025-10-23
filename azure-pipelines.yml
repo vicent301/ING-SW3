@@ -55,8 +55,7 @@ stages:
           - script: |
               cd frontend
               npm ci
-              # REACT_APP_API_URL se inyectará en QA/PROD, en Build no seteamos
-              npm run build
+              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net npm run build npm run build
             displayName: 'Build Front en Vite'
 
           - task: ArchiveFiles@2
@@ -157,10 +156,7 @@ stages:
                     npm run build
                   displayName: 'Build React con vars QA'
 
-                - script: |
-                    echo '{"apiUrl": "https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net"}' > frontend/dist/config.json
-                    echo "✅ Archivo config.json QA generado"
-                  displayName: 'crear config.json QA'
+
 
                 - task: ArchiveFiles@2
                   inputs:
@@ -273,10 +269,6 @@ stages:
                     npm run build
                   displayName: 'Build React con vars PROD'
 
-                - script: |
-                    echo '{"apiUrl": "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api"}' > frontend/dist/config.json
-                    echo "✅ Archivo config.json PROD generado"
-                  displayName: 'crear config.json PROD'
 
                 - task: ArchiveFiles@2
                   inputs:

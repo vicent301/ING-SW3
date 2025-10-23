@@ -1,19 +1,5 @@
-let API_URL = "/api";
-
-async function loadConfig() {
-  try {
-    const res = await fetch("/config.json");
-    const config = await res.json();
-    if (config.apiUrl) {
-      API_URL = config.apiUrl;
-    }
-  } catch (err) {
-    console.warn("No se pudo cargar config.json, usando /api por defecto");
-  }
-}
-
-// Llamar una sola vez al cargar la app
-await loadConfig();
+// Lee la URL desde la variable de entorno en tiempo de build
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // 🛍️ Productos
 export async function getProducts() {
