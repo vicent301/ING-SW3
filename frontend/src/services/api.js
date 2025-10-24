@@ -1,5 +1,5 @@
 // Lee la URL desde la variable de entorno en tiempo de build
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = "https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net/api";
 
 // 🛍️ Productos
 export async function getProducts() {
