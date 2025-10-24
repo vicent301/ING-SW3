@@ -3,13 +3,27 @@ package routes
 import (
 	"backend/controller"
 	"backend/middleware"
-	"net/http"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"time"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"https://appweb-front-qa.azurewebsites.net",
+			"https://appweb-front-prod.azurewebsites.net",
+			"http://localhost:5173", // para pruebas locales
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	api := r.Group("/api")
 	{
