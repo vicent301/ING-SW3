@@ -86,7 +86,7 @@ export default function Navbar() {
                   {cat.items.map((item) => (
                     <Link
                       key={item}
-                      to={`/productos/${item.toLowerCase()}`}
+                      to={`/products/${item.toLowerCase()}`}
                       className="hover:text-gray-600 transition text-sm"
                     >
                       {item}
