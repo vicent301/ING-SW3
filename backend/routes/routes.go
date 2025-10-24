@@ -14,8 +14,8 @@ func SetupRouter() *gin.Engine {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"https://appweb-front-qa.azurewebsites.net",
-			"https://appweb-front-prod.azurewebsites.net",
+			"https://appweb-front-prod-h7htdzbchbhsf6g2.northcentralus-01.azurewebsites.net",
+			"https://appweb-api-prod-hdhgb2bmb6eyaubv.chilecentral-01.azurewebsites.net",
 			"http://localhost:5173", // para pruebas locales
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
