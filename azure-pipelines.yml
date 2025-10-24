@@ -48,7 +48,7 @@ stages:
               # El zip incluirá el binario y (si tienes) carpeta 'public' o configs.
             displayName: 'Empaquetar backend'
 
-          # --- Frontend (React) ---
+          # --- Frontend (vite) ---
           - task: NodeTool@0
             inputs:
               versionSpec: '20.x'    # Ajusta si usas otra versión
@@ -141,7 +141,7 @@ stages:
                   displayName: 'Health check Backend QA'
 
                 # --- FRONTEND QA ---
-                # Volvemos a construir el front con la variable REACT_APP_API_URL de QA
+                # Volvemos a construir el front con la variable VITE_API_URL de QA
                 - task: NodeTool@0
                   inputs:
                     versionSpec: '20.x'
@@ -150,12 +150,12 @@ stages:
                     pwd
                     echo "📄 Contenido:"
                     ls -la
-                    echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    echo "Usando VITE_API_URL=$(VITE_API_URL)"
 
                     cd frontend
                     npm ci
-                    npm run build
-                  displayName: 'Build React con vars QA'
+                    VITE_API_URL=$(VITE_API_URL) npm run build
+                  displayName: 'Build Vite con vars QA'
 
 
 
@@ -265,10 +265,10 @@ stages:
                     versionSpec: '20.x'
                 - script: |
                     cd frontend
-                    echo "Usando REACT_APP_API_URL=$(REACT_APP_API_URL)"
+                    echo "Usando VITE_API_URL=$(VITE_API_URL)"
                     npm ci
-                    npm run build
-                  displayName: 'Build React con vars PROD'
+                    VITE_API_URL=$(VITE_API_URL) npm run build
+                  displayName: 'Build Vite con vars PROD'
 
 
                 - task: ArchiveFiles@2
