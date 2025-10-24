@@ -4,20 +4,20 @@ const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // 🛍️ Productos
 export async function getProducts() {
-  const res = await fetch(`${API_URL}/products`);
+  const res = await fetch(`${API_URL}/api/products`);
   if (!res.ok) throw new Error("Error al obtener productos");
   return res.json();
 }
 
 export async function getProductById(id) {
-  const res = await fetch(`${API_URL}/products/${id}`);
+  const res = await fetch(`${API_URL}/api/products/${id}`);
   if (!res.ok) throw new Error("Error al obtener producto");
   return res.json();
 }
 
 // 🔐 Autenticación
 export async function login(email, password) {
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await fetch(`${API_URL}/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -27,7 +27,7 @@ export async function login(email, password) {
 }
 
 export async function register(userData) {
-  const res = await fetch(`${API_URL}/register`, {
+  const res = await fetch(`${API_URL}/api/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -41,7 +41,7 @@ export async function getProfile() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
   
-  const res = await fetch(`${API_URL}/me`, {
+  const res = await fetch(`${API_URL}/api/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Error al obtener perfil");
@@ -55,7 +55,7 @@ export async function addToCart(productId, quantity = 1) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/cart/add`, {
+  const res = await fetch(`${API_URL}/api/cart/add`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export async function getCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/cart`, {
+  const res = await fetch(`${API_URL}/api/cart`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Error al obtener carrito");
@@ -84,7 +84,7 @@ export async function removeFromCart(productId) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/cart/remove`, {
+  const res = await fetch(`${API_URL}/api/cart/remove`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export async function clearCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/cart/clear`, {
+  const res = await fetch(`${API_URL}/api/cart/clear`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
