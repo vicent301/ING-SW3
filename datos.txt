@@ -3,7 +3,7 @@
   "description": "Zapatillas de running con tecnología Boost que ofrece un retorno de energía superior.",
   "price": 139.50,
   "stock": 35,
-  "image_url": "https://assets.adidas.com/images/t_prod_ss/w_960,c_limit,f_auto/ultraboost22.jpg"
+  "image_url": "https://placehold.co/600x400"
 }
 
 
@@ -12,7 +12,7 @@
   "description": "Zapatillas deportivas con unidad Air visible de 270 grados para máxima comodidad.",
   "price": 125.99,
   "stock": 40,
-  "image_url": "https://static.nike.com/a/images/t_prod_ss/w_960,c_limit,f_auto/airmax270.jpg"
+  "image_url": "https://placehold.co/600x400"
 }
 
     {
@@ -20,7 +20,7 @@
       "description": "Zapatillas urbanas con estilo retro-futurista y suela de goma resistente.",
       "price": 115.75,
       "stock": 25,
-      "image_url": "https://images.puma.com/image/upload/t_prod_ss/f_auto,q_auto,fl_lossy/PumaRSX3.jpg"
+      "image_url": "https://placehold.co/600x400"
     }
 
 para crear usuario:
