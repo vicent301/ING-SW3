@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { register } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -75,9 +75,9 @@ export default function Register() {
 
         <p className="text-sm mt-4 text-center">
           ¿Ya tenés cuenta?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-blue-600 hover:underline">
             Iniciá sesión
-          </a>
+          </Link>
         </p>
       </form>
     </div>

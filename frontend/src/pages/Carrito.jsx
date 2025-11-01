@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getCart, removeFromCart, clearCart } from "../services/api";
 
 export default function Carrito() {
@@ -45,12 +46,12 @@ export default function Carrito() {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold mb-4">🛍️ Tu carrito está vacío</h2>
-        <a
-          href="/products"
+        <Link
+          to="/products"
           className="text-blue-600 hover:underline font-semibold"
         >
           Ver productos
-        </a>
+        </Link>
       </div>
     );
 
