@@ -35,7 +35,7 @@ stages:
               version: '1.21.6'        # Ajusta tu versión
 
 
-                - script: |
+          - script: |
                     set -euo pipefail
                     cd backend
                     go mod download
