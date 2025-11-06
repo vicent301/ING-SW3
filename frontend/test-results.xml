@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="8" failures="0" errors="0" time="1.0060946">
+    <testsuite name="src/tests/Carrito.test.jsx" timestamp="2025-11-06T14:25:11.603Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1628179">
+        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; renderiza carrito y calcula total" time="0.1105194">
+            <system-out>
+🛒 Respuesta del backend: { items: [ { id: [33m1[39m, product_id: [33m1[39m, quantity: [33m2[39m, product: [36m[Object][39m } ] }
+
+            </system-out>
+        </testcase>
+        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; permite vaciar el carrito" time="0.0423155">
+            <system-out>
+🛒 Respuesta del backend: { items: [ { id: [33m1[39m, product_id: [33m1[39m, quantity: [33m2[39m, product: [36m[Object][39m } ] }
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Login.test.jsx" timestamp="2025-11-06T14:25:11.633Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1627989">
+        <testcase classname="src/tests/Login.test.jsx" name="login exitoso guarda token y redirige" time="0.1169927">
+        </testcase>
+        <testcase classname="src/tests/Login.test.jsx" name="muestra error si las credenciales son inválidas" time="0.036261">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Navbar.test.jsx" timestamp="2025-11-06T14:25:11.638Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.2481628">
+        <testcase classname="src/tests/Navbar.test.jsx" name="Navbar &gt; muestra nombre del usuario y cantidad del carrito" time="0.2410584">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Productos.test.jsx" timestamp="2025-11-06T14:25:11.641Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1334841">
+        <testcase classname="src/tests/Productos.test.jsx" name="renderiza productos y permite agregar al carrito" time="0.1240659">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/ProtectedRoute.test.jsx" timestamp="2025-11-06T14:25:11.643Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1124385">
+        <testcase classname="src/tests/ProtectedRoute.test.jsx" name="redirige al login si no hay token" time="0.1017664">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Register.test.jsx" timestamp="2025-11-06T14:25:11.644Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1863924">
+        <testcase classname="src/tests/Register.test.jsx" name="Register &gt; envía el formulario y navega a /login" time="0.1758212">
+        </testcase>
+    </testsuite>
+</testsuites>
