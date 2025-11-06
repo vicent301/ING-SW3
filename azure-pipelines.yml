@@ -33,6 +33,50 @@ stages:
           - task: GoTool@0
             inputs:
               version: '1.21.6'        # Ajusta tu versión
+
+
+                - script: |
+                    set -euo pipefail
+                    cd backend
+                    go mod download
+                    
+                    echo ">> Ejecutando tests Go con cobertura"
+                    # reporte junit
+                    go install github.com/jstemmer/go-junit-report@latest
+                    # cobertura xml
+                    go install github.com/boumenot/gocover-cobertura@latest
+                    
+                    # correr tests y guardar cobertura
+                    # pipefail mantiene el exit code de 'go test'
+                    go test ./... -v -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
+                    
+                    # convertir a cobertura
+                    cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
+                    
+                    # calcular % global
+                    total=$(go tool cover -func=coverage.out | tail -n1 | awk '{print $3}' | sed 's/%//')
+                    echo "Cobertura Go total: ${total}% (mínimo $(THRESH_GO_COVER)%)"
+                    awk "BEGIN {exit !(${total} < $(THRESH_GO_COVER))}" && { echo "ERROR: cobertura Go por debajo de umbral"; exit 1; } || true
+                  displayName: 'Run unit tests (Go) + coverage gate'
+
+                # Publicar resultados de pruebas Go (JUnit)
+                - task: PublishTestResults@2
+                  inputs:
+                    testResultsFormat: 'JUnit'
+                    testResultsFiles: 'backend/junit-backend.xml'
+                    testRunTitle: 'Go Unit Tests'
+                    failTaskOnFailedTests: true
+
+                # Publicar cobertura Go (Cobertura)
+                - task: PublishCodeCoverageResults@2
+                  inputs:
+                    codeCoverageTool: 'Cobertura'
+                    summaryFileLocation: 'backend/cobertura.xml'
+                    reportDirectory: 'backend'
+                    failIfCoverageEmpty: true
+                  displayName: 'Publish Go coverage'
+
+
           - script: |
               cd backend
               go mod download

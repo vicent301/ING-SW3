@@ -4,8 +4,10 @@ import (
 	"backend/domain"
 	"backend/tests/mocks"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -172,4 +174,20 @@ func TestGetProducts_EmptyQuery_OK(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "[]") // lista vacía OK
 	svc.AssertExpectations(t)
+}
+func TestGetProductByID_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	// mock service que devuelve error
+	svc := &mocks.ProductServiceMock{}
+	svc.On("GetProduct", uint(999)).Return(domain.Product{}, fmt.Errorf("not found"))
+
+	pc := NewProductController(svc)
+	r := gin.New()
+	r.GET("/p/:id", pc.GetProductByID)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/p/999", nil)
+	r.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNotFound, w.Code, w.Body.String())
 }

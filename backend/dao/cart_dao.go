@@ -4,6 +4,7 @@ import (
 	"backend/database"
 	"backend/domain"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -72,6 +73,16 @@ func AddToCart(userID, productID uint, quantity int) error {
 		return err
 	}
 
+	// 🧩 VALIDAR que el producto exista antes de seguir
+	var product Product
+	if err := database.DB.First(&product, productID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("producto no encontrado (id=%d)", productID)
+		}
+		return err
+	}
+
+	// 🔎 Buscar si el producto ya está en el carrito
 	var item CartItemEntity
 	result := database.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productID).First(&item)
 

@@ -96,3 +96,54 @@ func TestOrders_CreateAndList_OK(t *testing.T) {
 		t.Fatalf("get orders esper 200, got %d (%s)", w.Code, w.Body.String())
 	}
 }
+
+func TestCreateOrder_EmptyCart_Returns400(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	if err := dao.CreateUser(domain.User{
+		Name: "Vic", Email: "empty@ex.com", Password: "x",
+	}); err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("empty@ex.com"))
+	r.POST("/api/orders/create", CreateOrder)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/orders/create", bytes.NewReader([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("esperaba 400 por carrito vacío, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestGetOrders_DBDown_UserLookup_Returns404(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	// seed user
+	if err := dao.CreateUser(domain.User{
+		Name: "Vic", Email: "db@ex.com", Password: "x",
+	}); err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("db@ex.com"))
+	r.GET("/api/orders", GetOrders)
+
+	// cerrás DB => el primer acceso (GetUserByEmail) falla => 404
+	sqlDB, _ := database.DB.DB()
+	sqlDB.Close()
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/orders", nil))
+
+	if w.Code != http.StatusNotFound { // <= 404
+		t.Fatalf("esperaba 404 por error al buscar usuario, got %d (%s)", w.Code, w.Body.String())
+	}
+}

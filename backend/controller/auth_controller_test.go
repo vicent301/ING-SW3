@@ -130,3 +130,53 @@ func TestLogin_OK(t *testing.T) {
 		t.Fatalf("esperaba token en respuesta")
 	}
 }
+
+func TestRegister_DuplicateEmail_Returns500(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	// seed: usuario existente
+	if err := dao.CreateUser(domain.User{
+		Name: "Vic", Email: "dup@example.com", Password: "x",
+	}); err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.POST("/api/register", Register)
+
+	body := map[string]string{"name": "Otro", "email": "dup@example.com", "password": "y"}
+	b, _ := json.Marshal(body)
+	req := httptest.NewRequest(http.MethodPost, "/api/register", bytes.NewReader(b))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("esperaba 500 por email duplicado, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+func TestLogin_WrongPassword_Returns401(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	if err := dao.CreateUser(domain.User{
+		Name: "Vic", Email: "login@ex.com", Password: "correcta",
+	}); err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.POST("/api/login", Login)
+
+	body := map[string]string{"email": "login@ex.com", "password": "mala"}
+	b, _ := json.Marshal(body)
+	req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(b))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("esperaba 401, got %d (%s)", w.Code, w.Body.String())
+	}
+}
