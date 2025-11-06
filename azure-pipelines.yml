@@ -77,6 +77,44 @@ stages:
                     failIfCoverageEmpty: true
             displayName: 'Publish Go coverage'
 
+  # =========================
+  # 0) TESTS FRONTEND
+  # =========================
+  - stage: Frontend_Tests
+    displayName: "Frontend Unit Tests (Vitest)"
+    jobs:
+      - job: RunFrontendTests
+        displayName: "Ejecutar pruebas unitarias del Frontend"
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "20.x"
+
+          - script: |
+              cd frontend
+              npm ci
+              npx vitest run --coverage --reporter=junit
+            displayName: "Run Vitest with coverage"
+
+          # Publicar resultados en Azure DevOps
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "frontend/test-results.xml"
+              failTaskOnFailedTests: true
+            condition: succeededOrFailed()
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              codeCoverageTool: "Cobertura"
+              summaryFileLocation: "frontend/coverage/cobertura-coverage.xml"
+            condition: succeededOrFailed()
 
           - script: |
               cd backend
