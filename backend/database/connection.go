@@ -11,7 +11,7 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func Connect() *gorm.DB {
 	dsn := config.GetDSN()
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -20,4 +20,5 @@ func Connect() {
 	fmt.Println("✅ Conexión exitosa a MySQL")
 
 	DB = db
+	return DB
 }

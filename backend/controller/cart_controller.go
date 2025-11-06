@@ -2,23 +2,42 @@ package controllers
 
 import (
 	"backend/dao"
+	"backend/database"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-// 📦 Obtener carrito del usuario (GET /api/cart)
-func GetCart(c *gin.Context) {
-	email, _ := c.Get("email")
+func getEmailFromCtx(c *gin.Context) (string, bool) {
+	v, ok := c.Get("email")
+	if !ok {
+		return "", false
+	}
+	s, ok := v.(string)
+	if !ok || strings.TrimSpace(s) == "" {
+		return "", false
+	}
+	return s, true
+}
 
-	// Buscar usuario por email (domain.User)
-	user, err := dao.GetUserByEmail(email.(string))
+// 📦 GET /api/cart
+func GetCart(c *gin.Context) {
+	email, ok := getEmailFromCtx(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "no autorizado"})
+		return
+	}
+	if database.DB == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "base de datos no inicializada"})
+		return
+	}
+	user, err := dao.GetUserByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 		return
 	}
 
-	// Obtener o crear el carrito (domain.Cart)
 	cart, err := dao.GetOrCreateCartByUserID(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo obtener el carrito"})
@@ -28,18 +47,23 @@ func GetCart(c *gin.Context) {
 	c.JSON(http.StatusOK, cart)
 }
 
-// ➕ Agregar producto al carrito (POST /api/cart/add)
+// ➕ POST /api/cart/add
 func AddToCart(c *gin.Context) {
-	email, _ := c.Get("email")
-
-	// Obtener usuario por email
-	user, err := dao.GetUserByEmail(email.(string))
+	email, ok := getEmailFromCtx(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "no autorizado"})
+		return
+	}
+	if database.DB == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "base de datos no inicializada"})
+		return
+	}
+	user, err := dao.GetUserByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 		return
 	}
 
-	// Parsear el JSON recibido
 	var body struct {
 		ProductID uint `json:"product_id"`
 		Quantity  int  `json:"quantity"`
@@ -48,10 +72,12 @@ func AddToCart(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Formato JSON inválido"})
 		return
 	}
+	if body.ProductID == 0 || body.Quantity <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "product_id y quantity deben ser válidos"})
+		return
+	}
 
-	// Agregar al carrito
-	err = dao.AddToCart(user.ID, body.ProductID, body.Quantity)
-	if err != nil {
+	if err := dao.AddToCart(user.ID, body.ProductID, body.Quantity); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo agregar el producto al carrito"})
 		return
 	}
@@ -59,11 +85,18 @@ func AddToCart(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Producto agregado al carrito"})
 }
 
-// ❌ Eliminar un producto del carrito (DELETE /api/cart/remove)
+// ❌ DELETE /api/cart/remove
 func RemoveFromCart(c *gin.Context) {
-	email, _ := c.Get("email")
-
-	user, err := dao.GetUserByEmail(email.(string))
+	email, ok := getEmailFromCtx(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "no autorizado"})
+		return
+	}
+	if database.DB == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "base de datos no inicializada"})
+		return
+	}
+	user, err := dao.GetUserByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 		return
@@ -76,9 +109,12 @@ func RemoveFromCart(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Formato JSON inválido"})
 		return
 	}
+	if body.ProductID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "product_id requerido"})
+		return
+	}
 
-	err = dao.RemoveFromCart(user.ID, body.ProductID)
-	if err != nil {
+	if err := dao.RemoveFromCart(user.ID, body.ProductID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo eliminar el producto del carrito"})
 		return
 	}
@@ -86,18 +122,24 @@ func RemoveFromCart(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Producto eliminado del carrito"})
 }
 
-// 🧹 Vaciar carrito (DELETE /api/cart/clear)
+// 🧹 DELETE /api/cart/clear
 func ClearCart(c *gin.Context) {
-	email, _ := c.Get("email")
-
-	user, err := dao.GetUserByEmail(email.(string))
+	email, ok := getEmailFromCtx(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "no autorizado"})
+		return
+	}
+	if database.DB == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "base de datos no inicializada"})
+		return
+	}
+	user, err := dao.GetUserByEmail(email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 		return
 	}
 
-	err = dao.ClearCart(user.ID)
-	if err != nil {
+	if err := dao.ClearCart(user.ID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo vaciar el carrito"})
 		return
 	}
