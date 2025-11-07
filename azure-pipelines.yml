@@ -323,7 +323,6 @@ stages:
   # =========================
   - stage: Deploy_Prod
     displayName: "Deploy Producción"
-    dependsOn: E2E_QA_Cypress
     variables:
       - group: VG_PROD
     jobs:
