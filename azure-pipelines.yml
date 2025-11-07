@@ -150,19 +150,21 @@ stages:
               testRunTitle: "Cypress E2E"
             condition: succeededOrFailed()
 
+          # Videos
           - task: PublishBuildArtifacts@1
             displayName: "Artefacto: Cypress videos"
             inputs:
               ArtifactName: "cypress-videos"
-              PathtoPublish: "frontend/cypress/videos"
-            condition: succeededOrFailed()
+              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
+            condition: and(always(), exists('$(System.DefaultWorkingDirectory)/frontend/cypress/videos'))
 
+          # Screenshots
           - task: PublishBuildArtifacts@1
             displayName: "Artefacto: Cypress screenshots"
             inputs:
               ArtifactName: "cypress-screens"
-              PathtoPublish: "frontend/cypress/screenshots"
-            condition: succeededOrFailed()
+              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
+            condition: and(always(), exists('$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots'))
 
   # =========================
   # 1) ANALISIS ESTATICO (SonarCloud)
