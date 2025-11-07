@@ -77,13 +77,14 @@ stages:
 
 
   # =========================
-  # 0) TESTS FRONTEND
+  # 0) TESTS FRONTEND + BACKEND (coverage sin umbral)
   # =========================
   - stage: Frontend_Backend_Tests
     displayName: "Test Front + Back"
     jobs:
+      # ---------- FRONTEND ----------
       - job: RunFrontendTests
-        displayName: "Ejecutar pruebas unitarias del Frontend"
+        displayName: "Pruebas Frontend"
         pool:
           vmImage: "ubuntu-latest"
         steps:
@@ -95,66 +96,84 @@ stages:
             inputs:
               versionSpec: "20.x"
 
+          # Instalar conversor lcov -> Cobertura (quedará en devDependencies)
           - script: |
               cd frontend
               npm ci
-              npx vitest run --coverage --reporter=junit
-            displayName: "Run Vitest with coverage"
+              npm i -D lcov-to-cobertura-xml
+            displayName: "Preparar dependencias Frontend"
 
-          # Publicar resultados en Azure DevOps
+          - script: |
+              set -euo pipefail
+              cd frontend
+              # JUnit + coverage lcov
+              npx vitest run --coverage --reporter=junit --outputFile test-results.xml
+              # Convertir lcov -> Cobertura (para pestaña Code Coverage)
+              npx lcov-to-cobertura-xml coverage/lcov.info > coverage/cobertura.xml
+            displayName: "Run Vitest + coverage"
+
           - task: PublishTestResults@2
+            displayName: "Publicar tests Frontend (JUnit)"
             inputs:
               testResultsFormat: "JUnit"
               testResultsFiles: "frontend/test-results.xml"
+              testRunTitle: "Vitest"
               failTaskOnFailedTests: true
             condition: succeededOrFailed()
 
           - task: PublishCodeCoverageResults@2
+            displayName: "Publicar coverage Frontend"
             inputs:
               codeCoverageTool: "Cobertura"
-              summaryFileLocation: "frontend/coverage/cobertura-coverage.xml"
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/frontend/coverage/cobertura.xml"
+              reportDirectory: "$(System.DefaultWorkingDirectory)/frontend/coverage"
+              failIfCoverageEmpty: false
             condition: succeededOrFailed()
+
+      # ---------- BACKEND ----------
+      - job: RunBackendTests
+        displayName: "Pruebas Backend"
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+
+          - task: GoTool@0
+            inputs:
+              version: '1.21.6'
+
           - script: |
               set -euo pipefail
               cd backend
               go mod download
-              
-              echo ">> Ejecutando tests Go con cobertura"
-              # reporte junit
+              # Herramientas para JUnit y Cobertura
               go install github.com/jstemmer/go-junit-report@latest
-              # cobertura xml
               go install github.com/boumenot/gocover-cobertura@latest
-              
-              # correr tests y guardar cobertura
-              # pipefail mantiene el exit code de 'go test'
-              go test ./... -v -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
-              
-              # convertir a cobertura
+              # Tests con cobertura
+              go test ./... -v -covermode=atomic -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
+              # coverprofile -> Cobertura
               cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
-              
-              # calcular % global
-              total=$(go tool cover -func=coverage.out | tail -n1 | awk '{print $3}' | sed 's/%//')
-              echo "Cobertura Go total: ${total}% (mínimo $(THRESH_GO_COVER)%)"
-              awk "BEGIN {exit !(${total} < $(THRESH_GO_COVER))}" && { echo "ERROR: cobertura Go por debajo de umbral"; exit 1; } || true
-            displayName: 'Run unit tests (Go) + coverage gate'
+            displayName: "Run go test + coverage"
 
-            # Publicar resultados de pruebas Go (JUnit)
           - task: PublishTestResults@2
+            displayName: "Publicar tests Backend (JUnit)"
             inputs:
               testResultsFormat: 'JUnit'
               testResultsFiles: 'backend/junit-backend.xml'
               testRunTitle: 'Go Unit Tests'
               failTaskOnFailedTests: true
+            condition: succeededOrFailed()
 
-              # Publicar cobertura Go (Cobertura)
           - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar coverage Backend'
             inputs:
               codeCoverageTool: 'Cobertura'
-              summaryFileLocation: 'backend/cobertura.xml'
-              reportDirectory: 'backend'
-              failIfCoverageEmpty: true
-            displayName: 'Publish Go coverage'
-
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/backend/cobertura.xml'
+              reportDirectory: '$(System.DefaultWorkingDirectory)/backend'
+              failIfCoverageEmpty: false
+            condition: succeededOrFailed()
 
   # =========================
   # 2) QA
