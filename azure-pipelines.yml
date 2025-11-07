@@ -10,72 +10,12 @@ resources:
       checkoutOptions:
         clean: true
         submodules: false
-      # Clonar en la subcarpeta APP_WEB para respetar tu estructura
       path: APP_WEB
 
-
-# Variables globales mínimas (pueden ir vacías; usaremos Variable Groups)
 variables:
   buildConfiguration: 'Release'
 
-
 stages:
-  # =========================
-  # 1) BUILD
-  # =========================
-  - stage: Build
-    displayName: "Build Front + Back"
-    jobs:
-      - job: BuildJob
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          # --- Backend (Go) ---
-          - task: GoTool@0
-            inputs:
-              version: '1.21.6'        # Ajusta tu versión
-          - script: |
-              cd backend
-              go mod download
-              go build -o appweb-backend
-            displayName: 'Build Go backend'
-
-          - task: ArchiveFiles@2
-            inputs:
-              rootFolderOrFile: 'backend'
-              includeRootFolder: false
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
-              # El zip incluirá el binario y (si tienes) carpeta 'public' o configs.
-            displayName: 'Empaquetar backend'
-
-          # --- Frontend (vite) ---
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '20.x'    # Ajusta si usas otra versión
-          - script: |
-              cd frontend
-              npm ci
-              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api 
-              npm run build
-            displayName: 'Build Front en Vite'
-
-          - task: ArchiveFiles@2
-            inputs:
-              rootFolderOrFile: 'frontend/dist'
-              includeRootFolder: false
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
-            displayName: 'Empaquetar frontend'
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-              ArtifactName: 'drop'
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-            displayName: 'Publicar artefactos'
-
-
-
   # =========================
   # 0) TESTS FRONTEND + BACKEND (coverage sin umbral)
   # =========================
@@ -96,7 +36,7 @@ stages:
             inputs:
               versionSpec: "20.x"
 
-          # Instalar conversor lcov -> Cobertura (quedará en devDependencies)
+          # Instala conversor y deps
           - script: |
               cd frontend
               npm ci
@@ -106,9 +46,9 @@ stages:
           - script: |
               set -euo pipefail
               cd frontend
-              # JUnit + coverage lcov
+              # Vitest con cobertura + JUnit guardado en archivo
               npx vitest run --coverage --reporter=junit --outputFile test-results.xml
-              # Convertir lcov -> Cobertura (para pestaña Code Coverage)
+              # Convertir lcov -> Cobertura para Azure
               npx lcov-to-cobertura-xml coverage/lcov.info > coverage/cobertura.xml
             displayName: "Run Vitest + coverage"
 
@@ -129,6 +69,13 @@ stages:
               reportDirectory: "$(System.DefaultWorkingDirectory)/frontend/coverage"
               failIfCoverageEmpty: false
             condition: succeededOrFailed()
+
+          # (Opcional pero útil) publicar HTML de coverage del Front
+          - task: PublishBuildArtifacts@1
+            displayName: "Artefacto: coverage HTML Front"
+            inputs:
+              ArtifactName: 'coverage-front'
+              PathtoPublish: 'frontend/coverage'
 
       # ---------- BACKEND ----------
       - job: RunBackendTests
@@ -155,6 +102,8 @@ stages:
               go test ./... -v -covermode=atomic -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
               # coverprofile -> Cobertura
               cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
+              # (Opcional) HTML de coverage para inspección
+              go tool cover -html=coverage.out -o coverage.html
             displayName: "Run go test + coverage"
 
           - task: PublishTestResults@2
@@ -175,6 +124,67 @@ stages:
               failIfCoverageEmpty: false
             condition: succeededOrFailed()
 
+          # (Opcional) publicar HTML de coverage del Back
+          - task: PublishBuildArtifacts@1
+            displayName: "Artefacto: coverage HTML Back"
+            inputs:
+              ArtifactName: 'coverage-back'
+              PathtoPublish: 'backend/coverage.html'
+
+  # =========================
+  # 1) BUILD
+  # =========================
+  - stage: Build
+    displayName: "Build Front + Back"
+    dependsOn: Frontend_Backend_Tests
+    condition: succeeded()
+    jobs:
+      - job: BuildJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          # --- Backend (Go) ---
+          - task: GoTool@0
+            inputs:
+              version: '1.21.6'
+          - script: |
+              cd backend
+              go mod download
+              go build -o appweb-backend
+            displayName: 'Build Go backend'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: 'backend'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
+            displayName: 'Empaquetar backend'
+
+          # --- Frontend (Vite) ---
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+          - script: |
+              cd frontend
+              npm ci
+              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api npm run build
+            displayName: 'Build Front en Vite'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: 'frontend/dist'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
+            displayName: 'Empaquetar frontend'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              ArtifactName: 'drop'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            displayName: 'Publicar artefactos'
+
   # =========================
   # 2) QA
   # =========================
@@ -182,7 +192,7 @@ stages:
     displayName: "Deploy QA"
     dependsOn: Build
     variables:
-      - group: VG_QA     # <- Variable Group QA
+      - group: VG_QA
     jobs:
       - deployment: QADeploy
         displayName: 'Deploy a QA'
@@ -203,17 +213,13 @@ stages:
                   displayName: 'Deploy Backend QA'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameBack)'
                     package: '$(Pipeline.Workspace)/drop/backend.zip'
 
-
-                # Setear App Settings (DB, etc.) por si cambian
                 - task: AzureAppServiceSettings@1
                   displayName: 'App Settings Backend QA'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameBack)'
                     appSettings: |
                       [
@@ -226,7 +232,6 @@ stages:
                         {"name":"PORT","value":"8080","slotSetting":false}
                       ]
 
-                # Health check backend
                 - script: |
                     BACK_URL="https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
@@ -243,23 +248,17 @@ stages:
                   displayName: 'Health check Backend QA'
 
                 # --- FRONTEND QA ---
-                # Volvemos a construir el front con la variable VITE_API_URL de QA
                 - task: NodeTool@0
                   inputs:
                     versionSpec: '20.x'
                 - script: |
-                    echo "📂 Carpeta actual:"
-                    pwd
-                    echo "📄 Contenido:"
-                    ls -la
+                    echo "📂 Carpeta actual:"; pwd
+                    echo "📄 Contenido:"; ls -la
                     echo "Usando VITE_API_URL=$(VITE_API_URL)"
-
                     cd frontend
                     npm ci
                     VITE_API_URL=$(VITE_API_URL) npm run build
                   displayName: 'Build Vite con vars QA'
-
-
 
                 - task: ArchiveFiles@2
                   inputs:
@@ -269,18 +268,13 @@ stages:
                     archiveFile: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
                   displayName: 'Empaquetar frontend QA'
 
-
                 - task: AzureWebApp@1
                   displayName: 'Deploy Frontend QA'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameFront)'
                     package: '$(Pipeline.Workspace)/drop/frontend-qa.zip'
 
-
-
-                # Health check frontend
                 - script: |
                     FRONT_URL="https://appweb-front-qa-ctg3cwawggeag6g4.northcentralus-01.azurewebsites.net/"
                     echo "Checking $FRONT_URL"
@@ -303,11 +297,11 @@ stages:
     displayName: "Deploy Producción"
     dependsOn: Deploy_QA
     variables:
-      - group: VG_PROD   # <- Variable Group PROD
+      - group: VG_PROD
     jobs:
       - deployment: ProdDeploy
         displayName: 'Deploy a Producción'
-        environment: 'Production'   # <- este env tiene aprobación manual
+        environment: 'Production'
         strategy:
           runOnce:
             deploy:
@@ -319,12 +313,10 @@ stages:
                 - download: current
                   artifact: drop
 
-                # BACKEND PROD
                 - task: AzureWebApp@1
                   displayName: 'Deploy Backend PROD'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameBack)'
                     package: '$(Pipeline.Workspace)/drop/backend.zip'
 
@@ -332,7 +324,6 @@ stages:
                   displayName: 'App Settings Backend PROD'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameBack)'
                     appSettings: |
                       [
@@ -360,8 +351,6 @@ stages:
                     exit 1
                   displayName: 'Health check Backend PROD'
 
-
-                # FRONTEND PROD (rebuild con URL de PROD)
                 - task: NodeTool@0
                   inputs:
                     versionSpec: '20.x'
@@ -371,7 +360,6 @@ stages:
                     npm ci
                     VITE_API_URL=$(VITE_API_URL) npm run build
                   displayName: 'Build Vite con vars PROD'
-
 
                 - task: ArchiveFiles@2
                   inputs:
@@ -385,21 +373,10 @@ stages:
                   displayName: 'Deploy Frontend PROD'
                   inputs:
                     azureSubscription: 'sc-azure-appweb'
-
                     appName: '$(webAppNameFront)'
                     package: '$(Pipeline.Workspace)/drop/frontend-prod.zip'
 
                 - script: |
                     FRONT_URL="https://appweb-front-prod-h7htdzbchbhsf6g2.northcentralus-01.azurewebsites.net/"
                     echo "Checking $FRONT_URL"
-                    for i in {1..10}; do
-                      code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
-                      echo "Intento $i => $code"
-                      if [ "$code" = "200" ]; then
-                        exit 0
-                      fi
-                      sleep 5
-                    done
-                    echo "Health check frontend PROD FAILED"
-                    exit 1
-                  displayName: 'Health check Frontend PROD'
+                    fo
