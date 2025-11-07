@@ -98,13 +98,14 @@ export default function Carrito() {
 
       <div className="mt-6 flex justify-between items-center">
         <button
+          data-testid="cart-clear"
           onClick={handleClear}
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
         >
           Vaciar carrito
         </button>
 
-        <h2 className="text-xl font-bold">Total: ${total.toFixed(2)}</h2>
+        <h2 data-testid="cart-total" className="text-xl font-bold">Total: ${total.toFixed(2)}</h2>
       </div>
 
       {msg && (

@@ -10,18 +10,9 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const categories = [
-    {
-      name: "Calzado",
-      items: ["Zapatillas", "Botas", "Sandalias", "Ver Todo"],
-    },
-    {
-      name: "Indumentaria",
-      items: ["Remeras", "Buzos", "Pantalones", "Camperas", "Ver Todo"],
-    },
-    {
-      name: "Accesorios",
-      items: ["Gorros", "Medias", "Mochilas", "Riñoneras", "Ver Todo"],
-    },
+    { name: "Calzado", items: ["Zapatillas", "Botas", "Sandalias", "Ver Todo"] },
+    { name: "Indumentaria", items: ["Remeras", "Buzos", "Pantalones", "Camperas", "Ver Todo"] },
+    { name: "Accesorios", items: ["Gorros", "Medias", "Mochilas", "Riñoneras", "Ver Todo"] },
   ];
 
   useEffect(() => {
@@ -33,7 +24,7 @@ export default function Navbar() {
         const cartData = await getCart();
         setCartCount(cartData.items?.length || 0);
       } catch (err) {
-        // Si no hay token o falla la autenticación, no hace nada
+        // sin token o 401 -> ignorar
       }
     }
     loadData();
@@ -49,10 +40,10 @@ export default function Navbar() {
     <header
       className="sticky top-0 z-50 w-full backdrop-blur-md shadow-md border-b border-neutral-300"
       style={{
-        background:
-          "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
+        background: "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
         color: "#111",
       }}
+      data-testid="navbar"
     >
       <nav className="max-w-[1600px] mx-auto px-16 py-5 flex justify-between items-center">
         {/* Logo */}
@@ -60,13 +51,13 @@ export default function Navbar() {
           to="/"
           className="text-4xl font-extrabold tracking-tight transition duration-300 hover:opacity-90"
           style={{
-            background:
-              "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
+            background: "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             fontFamily: "'Anton', sans-serif",
             letterSpacing: "1px",
           }}
+          data-testid="logo-home"
         >
           ZapaStore
         </Link>
@@ -107,34 +98,29 @@ export default function Navbar() {
               type="text"
               placeholder="Buscar..."
               className="bg-transparent text-sm text-gray-800 px-2 focus:outline-none w-28"
+              data-testid="search-input"
             />
           </div>
 
           {/* Usuario */}
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="font-semibold text-sm">Hola, {user.name}</span>
-              <button onClick={handleLogout} title="Cerrar sesión">
-                <LogOut
-                  size={22}
-                  className="text-gray-700 hover:text-black transition"
-                />
+              <span className="font-semibold text-sm" data-testid="greeting">Hola, {user.name}</span>
+              <button onClick={handleLogout} title="Cerrar sesión" data-testid="logout-button">
+                <LogOut size={22} className="text-gray-700 hover:text-black transition" />
               </button>
             </div>
           ) : (
-            <Link to="/login" className="hover:text-gray-700 transition">
+            <Link to="/login" className="hover:text-gray-700 transition" data-testid="nav-login">
               <User size={24} />
             </Link>
           )}
 
           {/* Carrito */}
-          <Link
-            to="/carrito"
-            className="hover:text-gray-700 transition relative"
-          >
+          <Link to="/carrito" className="hover:text-gray-700 transition relative" data-testid="navbar-cart">
             <ShoppingCart size={24} />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5">
+              <span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5" data-testid="cart-badge">
                 {cartCount}
               </span>
             )}
