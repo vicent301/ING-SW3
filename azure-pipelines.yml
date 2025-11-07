@@ -40,7 +40,7 @@ stages:
           - script: |
               cd frontend
               npm ci
-              npm i -D lcov-to-cobertura-xml
+              npm i -D lcov-cobertura
             displayName: "Preparar dependencias Frontend"
 
           - script: |
@@ -48,8 +48,8 @@ stages:
               cd frontend
               # Vitest con cobertura + JUnit guardado en archivo
               npx vitest run --coverage --reporter=junit --outputFile test-results.xml
-              # Convertir lcov -> Cobertura para Azure
-              npx lcov-to-cobertura-xml coverage/lcov.info > coverage/cobertura.xml
+              # Convertir lcov -> Cobertura.xml
+              npx lcov-covertura -i coverage/lcov.info -o coverage/cobertura.xml
             displayName: "Run Vitest + coverage"
 
           - task: PublishTestResults@2
