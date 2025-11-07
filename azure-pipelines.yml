@@ -22,7 +22,7 @@ stages:
   - stage: Frontend_Backend_Tests
     displayName: "Test Front + Back"
     jobs:
-      # ---------- FRONTEND ----------
+       # ---------- FRONTEND ----------
       - job: RunFrontendTests
         displayName: "Pruebas Frontend"
         pool:
@@ -36,21 +36,12 @@ stages:
             inputs:
               versionSpec: "20.x"
 
-          # Instala conversor y deps
           - script: |
               cd frontend
               npm ci
-              npm i -D lcov-cobertura
-            displayName: "Preparar dependencias Frontend"
-
-          - script: |
-              set -euo pipefail
-              cd frontend
-              # Vitest con cobertura + JUnit guardado en archivo
+              # Vitest con cobertura (Istanbul) + reporte JUnit
               npx vitest run --coverage --reporter=junit --outputFile test-results.xml
-              # Convertir lcov -> Cobertura.xml
-              npx lcov-covertura -i coverage/lcov.info -o coverage/cobertura.xml
-            displayName: "Run Vitest + coverage"
+            displayName: "Run Vitest + coverage (Istanbul)"
 
           - task: PublishTestResults@2
             displayName: "Publicar tests Frontend (JUnit)"
@@ -65,17 +56,16 @@ stages:
             displayName: "Publicar coverage Frontend"
             inputs:
               codeCoverageTool: "Cobertura"
-              summaryFileLocation: "$(System.DefaultWorkingDirectory)/frontend/coverage/cobertura.xml"
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/frontend/coverage/cobertura-coverage.xml"
               reportDirectory: "$(System.DefaultWorkingDirectory)/frontend/coverage"
               failIfCoverageEmpty: false
             condition: succeededOrFailed()
 
-          # (Opcional pero útil) publicar HTML de coverage del Front
           - task: PublishBuildArtifacts@1
             displayName: "Artefacto: coverage HTML Front"
             inputs:
-              ArtifactName: 'coverage-front'
-              PathtoPublish: 'frontend/coverage'
+              ArtifactName: "coverage-front"
+              PathtoPublish: "frontend/coverage"
 
       # ---------- BACKEND ----------
       - job: RunBackendTests
