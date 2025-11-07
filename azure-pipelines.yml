@@ -142,6 +142,13 @@ stages:
               npx cypress run
             displayName: "Run Cypress headless (baseUrl QA)"
 
+          # --- Opción B: Crear carpetas siempre para evitar errores ---
+          - script: |
+              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
+              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
+            displayName: "Asegurar carpetas Cypress"
+            condition: always()
+
           - task: PublishTestResults@2
             displayName: "Publicar resultados E2E (JUnit)"
             inputs:
@@ -150,22 +157,19 @@ stages:
               testRunTitle: "Cypress E2E"
             condition: succeededOrFailed()
 
-          # Videos
           - task: PublishBuildArtifacts@1
             displayName: "Artefacto: Cypress videos"
             inputs:
               ArtifactName: "cypress-videos"
               PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
-            condition: and(always(), exists('$(System.DefaultWorkingDirectory)/frontend/cypress/videos'))
+            condition: always()
 
-          # Screenshots
           - task: PublishBuildArtifacts@1
             displayName: "Artefacto: Cypress screenshots"
             inputs:
               ArtifactName: "cypress-screens"
               PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
-            condition: and(always(), exists('$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots'))
-
+            condition: always()
   # =========================
   # 1) ANALISIS ESTATICO (SonarCloud)
   # =========================
