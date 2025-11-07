@@ -22,7 +22,7 @@ stages:
   - stage: Frontend_Backend_Tests
     displayName: "Test Front + Back"
     jobs:
-       # ---------- FRONTEND ----------
+      # ---------- FRONTEND ----------
       - job: RunFrontendTests
         displayName: "Pruebas Frontend"
         pool:
@@ -122,11 +122,48 @@ stages:
               PathtoPublish: 'backend/coverage.html'
 
   # =========================
-  # 1) BUILD
+  # 1) ANALISIS ESTATICO (SonarCloud)
+  # =========================
+  - stage: Static_Analysis_SonarCloud
+    displayName: "Static Analysis (SonarCloud)"
+    dependsOn: Frontend_Backend_Tests
+    condition: succeeded()
+    jobs:
+      - job: SonarAnalysis
+        displayName: "Run SonarCloud + Quality Gate"
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 0   # <-- REQUERIDO por Sonar para blame
+
+          - task: SonarCloudPrepare@2
+            displayName: "SonarCloud Prepare"
+            inputs:
+              # Usa el TIPO "SonarQube Cloud" (así aparece hoy en Azure)
+              SonarCloud: 'SonarCloud'  # <-- NOMBRE EXACTO de tu Service Connection
+              organization: 'simons15'               # <-- tu org
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliProjectKey: 'simons15_api_ecommerce' # <-- project key
+              cliProjectName: 'api_ecommerce'         # <-- opcional
+
+          - task: SonarCloudAnalyze@2
+            displayName: "Run Sonar Analysis"
+
+          - task: SonarCloudPublish@2
+            displayName: "Publish Sonar Results (Quality Gate)"
+            inputs:
+              pollingTimeoutSec: '300'
+
+  # =========================
+  # 2) BUILD
   # =========================
   - stage: Build
     displayName: "Build Front + Back"
-    dependsOn: Frontend_Backend_Tests
+    dependsOn: Static_Analysis_SonarCloud
     condition: succeeded()
     jobs:
       - job: BuildJob
@@ -176,7 +213,7 @@ stages:
             displayName: 'Publicar artefactos'
 
   # =========================
-  # 2) QA
+  # 3) QA
   # =========================
   - stage: Deploy_QA
     displayName: "Deploy QA"
@@ -280,12 +317,13 @@ stages:
                     exit 1
                   displayName: 'Health check Frontend QA'
 
+
   # =========================
-  # 3) PRODUCCIÓN (con aprobación)
+  # 4) PRODUCCIÓN (con aprobación)
   # =========================
   - stage: Deploy_Prod
     displayName: "Deploy Producción"
-    dependsOn: Deploy_QA
+    dependsOn: E2E_QA_Cypress
     variables:
       - group: VG_PROD
     jobs:
@@ -369,4 +407,14 @@ stages:
                 - script: |
                     FRONT_URL="https://appweb-front-prod-h7htdzbchbhsf6g2.northcentralus-01.azurewebsites.net/"
                     echo "Checking $FRONT_URL"
-                    fo
+                    for i in {1..10}; do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONT_URL")
+                      echo "Intento $i => $code"
+                      if [ "$code" = "200" ]; then
+                        exit 0
+                      fi
+                      sleep 5
+                    done
+                    echo "Health check frontend PROD FAILED"
+                    exit 1
+                  displayName: 'Health check Frontend PROD'
