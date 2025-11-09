@@ -1,28 +1,33 @@
+# ---- Build stage ----
 FROM golang:1.21-alpine AS builder
 WORKDIR /app
 
-Dependencias
+# Dependencias
 COPY go.mod go.sum ./
 RUN go mod download
 
-Código
+# Código
 COPY . .
 
-ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
-RUN go build -o server ./...
+# Compilar binario estático para Linux
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o appweb-backend ./...
 
+# ---- Runtime stage ----
 FROM alpine:3.20
+# Certificados para TLS (MySQL, etc.)
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
-Usuario no-root
-RUN adduser -D -u 10001 appuser
-USER appuser
+# Copiar binario
+COPY --from=builder /app/appweb-backend /app/appweb-backend
 
-Copiamos binario
-COPY --from=builder /app/server /app/server
-
+# Puerto de tu API (tu app usa 8080)
+ENV PORT=8080
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1:8080/api/healthz || exit 1
+# Usuario no root (opcional)
+# RUN adduser -D -g '' appuser && chown -R appuser:appuser /app
+# USER appuser
 
-CMD ["/app/server"]
+# Ejecutar
+CMD ["/app/appweb-backend"]
