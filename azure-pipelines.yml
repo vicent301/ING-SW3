@@ -136,25 +136,34 @@ stages:
               set -euo pipefail
               cd backend
 
-              # Listar paquetes, excluyendo helpers de test que sesgan el denominador
-              PKGS=$(go list ./... | grep -v -E 'backend/tests/mocks|backend/testutil')
+              # 1) Instalar herramientas necesarias y exponer GOPATH/bin
+              go install github.com/jstemmer/go-junit-report@latest
+              go install github.com/boumenot/gocover-cobertura@latest
+              export GOPATH="$(go env GOPATH)"
+              export PATH="$GOPATH/bin:$PATH"
 
-              # Calcular cobertura SOLO para esos paquetes (sin contar mocks/testutil)
-              COVERPKG=$(echo "$PKGS" | tr ' ' ',')
+              # 2) Listar paquetes a testear EXCLUYENDO helpers de test y el paquete raíz "backend"
+              PKGS="$(go list ./... \
+                  | grep -v -E 'backend/tests/mocks|backend/testutil' \
+                  | grep -v -E '^backend$' \
+                  | tr '\n' ' ')"
+
+              # 3) coverpkg = mismos paquetes, en CSV
+              COVERPKG="$(echo "$PKGS" | tr ' ' ',' )"
 
               echo "PKGS=$PKGS"
               echo "COVERPKG=$COVERPKG"
 
-              go test -v \
-                -covermode=atomic \
-                -coverpkg="$COVERPKG" \
-                $PKGS \
-                -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
+              # 4) Ejecutar tests con cobertura y generar reportes
+              #    (usamos tee para poder pasar la salida a go-junit-report sin perder el exit code)
+              go test -v -covermode=atomic -coverpkg="$COVERPKG" $PKGS -coverprofile=coverage.out | tee test.out
+              cat test.out | go-junit-report > junit-backend.xml
 
-              cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
-
+              # Cobertura Cobertura + HTML
+              gocover-cobertura < coverage.out > cobertura.xml
               go tool cover -html=coverage.out -o coverage.html
             displayName: "Run go test (filtered coverpkg)"
+
 
           - task: PublishTestResults@2
             displayName: "Publicar tests Backend (JUnit)"
