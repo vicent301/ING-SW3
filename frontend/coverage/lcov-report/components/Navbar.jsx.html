@@ -195,21 +195,7 @@
 <a name='L130'></a><a href='#L130'>130</a>
 <a name='L131'></a><a href='#L131'>131</a>
 <a name='L132'></a><a href='#L132'>132</a>
-<a name='L133'></a><a href='#L133'>133</a>
-<a name='L134'></a><a href='#L134'>134</a>
-<a name='L135'></a><a href='#L135'>135</a>
-<a name='L136'></a><a href='#L136'>136</a>
-<a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a>
-<a name='L139'></a><a href='#L139'>139</a>
-<a name='L140'></a><a href='#L140'>140</a>
-<a name='L141'></a><a href='#L141'>141</a>
-<a name='L142'></a><a href='#L142'>142</a>
-<a name='L143'></a><a href='#L143'>143</a>
-<a name='L144'></a><a href='#L144'>144</a>
-<a name='L145'></a><a href='#L145'>145</a>
-<a name='L146'></a><a href='#L146'>146</a>
-<a name='L147'></a><a href='#L147'>147</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L133'></a><a href='#L133'>133</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -221,15 +207,6 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -350,11 +327,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, User, Search, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -367,18 +339,9 @@ export default function Navbar() {
   const navigate = useNavigate();
 &nbsp;
   const categories = [
-    {
-      name: "Calzado",
-      items: ["Zapatillas", "Botas", "Sandalias", "Ver Todo"],
-    },
-    {
-      name: "Indumentaria",
-      items: ["Remeras", "Buzos", "Pantalones", "Camperas", "Ver Todo"],
-    },
-    {
-      name: "Accesorios",
-      items: ["Gorros", "Medias", "Mochilas", "Riñoneras", "Ver Todo"],
-    },
+    { name: "Calzado", items: ["Zapatillas", "Botas", "Sandalias", "Ver Todo"] },
+    { name: "Indumentaria", items: ["Remeras", "Buzos", "Pantalones", "Camperas", "Ver Todo"] },
+    { name: "Accesorios", items: ["Gorros", "Medias", "Mochilas", "Riñoneras", "Ver Todo"] },
   ];
 &nbsp;
   useEffect(() =&gt; {
@@ -390,7 +353,7 @@ export default function Navbar() {
         const cartData = await getCart();
         setCartCount(cartData.items?.length || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>;
       } catch (err) {
-        // Si no hay token o falla la autenticación, no hace nada
+        // sin token o 401 -&gt; ignorar
       }
     }
     loadData();
@@ -406,10 +369,10 @@ export default function Navbar() {
     &lt;header
       className="sticky top-0 z-50 w-full backdrop-blur-md shadow-md border-b border-neutral-300"
       style={{
-        background:
-          "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
+        background: "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
         color: "#111",
       }}
+      data-testid="navbar"
     &gt;
       &lt;nav className="max-w-[1600px] mx-auto px-16 py-5 flex justify-between items-center"&gt;
         {/* Logo */}
@@ -417,13 +380,13 @@ export default function Navbar() {
           to="/"
           className="text-4xl font-extrabold tracking-tight transition duration-300 hover:opacity-90"
           style={{
-            background:
-              "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
+            background: "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             fontFamily: "'Anton', sans-serif",
             letterSpacing: "1px",
           }}
+          data-testid="logo-home"
         &gt;
           ZapaStore
         &lt;/Link&gt;
@@ -464,34 +427,29 @@ export default function Navbar() {
               type="text"
               placeholder="Buscar..."
               className="bg-transparent text-sm text-gray-800 px-2 focus:outline-none w-28"
+              data-testid="search-input"
             /&gt;
           &lt;/div&gt;
 &nbsp;
           {/* Usuario */}
           {user ? (
             &lt;div className="flex items-center gap-4"&gt;
-              &lt;span className="font-semibold text-sm"&gt;Hola, {user.name}&lt;/span&gt;
-              &lt;button onClick={handleLogout} title="Cerrar sesión"&gt;
-                &lt;LogOut
-                  size={22}
-                  className="text-gray-700 hover:text-black transition"
-                /&gt;
+              &lt;span className="font-semibold text-sm" data-testid="greeting"&gt;Hola, {user.name}&lt;/span&gt;
+              &lt;button onClick={handleLogout} title="Cerrar sesión" data-testid="logout-button"&gt;
+                &lt;LogOut size={22} className="text-gray-700 hover:text-black transition" /&gt;
               &lt;/button&gt;
             &lt;/div&gt;
           ) : (
-            &lt;Link to="/login" className="hover:text-gray-700 transition"&gt;
+            &lt;Link to="/login" className="hover:text-gray-700 transition" data-testid="nav-login"&gt;
               &lt;User size={24} /&gt;
             &lt;/Link&gt;
           )}
 &nbsp;
           {/* Carrito */}
-          &lt;Link
-            to="/carrito"
-            className="hover:text-gray-700 transition relative"
-          &gt;
+          &lt;Link to="/carrito" className="hover:text-gray-700 transition relative" data-testid="navbar-cart"&gt;
             &lt;ShoppingCart size={24} /&gt;
             {cartCount &gt; 0 &amp;&amp; (
-              &lt;span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5"&gt;
+              &lt;span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5" data-testid="cart-badge"&gt;
                 {cartCount}
               &lt;/span&gt;
             )}
@@ -508,7 +466,7 @@ export default function Navbar() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-07T13:51:39.385Z
+                at 2025-11-09T15:30:09.045Z
             </div>
         <script src="../prettify.js"></script>
         <script>
