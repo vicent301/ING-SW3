@@ -3,23 +3,9 @@ package controllers
 import (
 	"backend/dao"
 	"backend/database"
-	"net/http"
-	"strings"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
-
-func getEmailFromCtx(c *gin.Context) (string, bool) {
-	v, ok := c.Get("email")
-	if !ok {
-		return "", false
-	}
-	s, ok := v.(string)
-	if !ok || strings.TrimSpace(s) == "" {
-		return "", false
-	}
-	return s, true
-}
 
 // 📦 GET /api/cart
 func GetCart(c *gin.Context) {
