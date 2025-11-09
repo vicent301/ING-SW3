@@ -135,20 +135,26 @@ stages:
           - script: |
               set -euo pipefail
               cd backend
-              go mod download
-              
-              go install github.com/jstemmer/go-junit-report@latest
-              go install github.com/boumenot/gocover-cobertura@latest
-              
-              export GOPATH="$(go env GOPATH)"
-              export PATH="$GOPATH/bin:$PATH"
 
-              go test ./... -v -covermode=atomic -coverprofile=coverage.out | go-junit-report > junit-backend.xml
+              # Listar paquetes, excluyendo helpers de test que sesgan el denominador
+              PKGS=$(go list ./... | grep -v -E 'backend/tests/mocks|backend/testutil')
 
-              gocover-cobertura < coverage.out > cobertura.xml
+              # Calcular cobertura SOLO para esos paquetes (sin contar mocks/testutil)
+              COVERPKG=$(echo "$PKGS" | tr ' ' ',')
+
+              echo "PKGS=$PKGS"
+              echo "COVERPKG=$COVERPKG"
+
+              go test -v \
+                -covermode=atomic \
+                -coverpkg="$COVERPKG" \
+                $PKGS \
+                -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
+
+              cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
 
               go tool cover -html=coverage.out -o coverage.html
-            displayName: "Run go test + coverage"
+            displayName: "Run go test (filtered coverpkg)"
 
           - task: PublishTestResults@2
             displayName: "Publicar tests Backend (JUnit)"
