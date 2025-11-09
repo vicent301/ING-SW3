@@ -37,6 +37,7 @@ stages:
               versionSpec: "20.x"
 
           - script: |
+              set -euo pipefail
               cd frontend
               npm ci
               # Vitest con cobertura (Istanbul) + reporte JUnit
@@ -85,14 +86,22 @@ stages:
               set -euo pipefail
               cd backend
               go mod download
+              
               # Herramientas para JUnit y Cobertura
               go install github.com/jstemmer/go-junit-report@latest
               go install github.com/boumenot/gocover-cobertura@latest
-              # Tests con cobertura
-              go test ./... -v -covermode=atomic -coverprofile=coverage.out | $(go env GOPATH)/bin/go-junit-report > junit-backend.xml
-              # coverprofile -> Cobertura
-              cat coverage.out | $(go env GOPATH)/bin/gocover-cobertura > cobertura.xml
-              # (Opcional) HTML de coverage para inspección
+              
+                # Añadir GOPATH/bin al PATH para invocar los binarios
+              export GOPATH="$(go env GOPATH)"
+              export PATH="$GOPATH/bin:$PATH"
+
+              # Ejecutar tests con cobertura y generar JUnit
+              go test ./... -v -covermode=atomic -coverprofile=coverage.out | go-junit-report > junit-backend.xml
+
+              # coverprofile -> Cobertura XML
+              gocover-cobertura < coverage.out > cobertura.xml
+
+              # HTML de cobertura para inspección
               go tool cover -html=coverage.out -o coverage.html
             displayName: "Run go test + coverage"
 
@@ -118,7 +127,7 @@ stages:
             displayName: "Artefacto: coverage HTML Back"
             inputs:
               ArtifactName: 'coverage-back'
-              PathtoPublish: 'backend/coverage.html'
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/backend/coverage.html'
 
       # ---------- E2E CYPRESS ----------
       - job: RunCypressE2E
