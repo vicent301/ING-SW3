@@ -19,8 +19,8 @@ variables:
   resourceGroup: 'gr-acr-app'
 
   # ACR
-  acrName: 'acrecommerce'
-  acrLoginServer: 'acrecommerce.azurecr.io'
+  acrName: 'acreccommerce'
+  acrLoginServer: 'acreccommerce.azurecr.io'
 
   # Nombres de imágenes (repos en ACR)
   backImageName: 'appweb-cont-back'
@@ -395,7 +395,7 @@ stages:
 
                 # Health check backend QA
                 - script: |
-                    BACK_URL="https://$(webAppApiQA).azurewebsites.net/api/healthz"
+                    BACK_URL="https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..15}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
@@ -476,7 +476,7 @@ stages:
                           PORT=8080
 
                 - script: |
-                    BACK_URL="https://$(webAppApiPROD).azurewebsites.net/api/healthz"
+                    BACK_URL="https://cont-api-prod-hqgzgzb2cdbegdag.chilecentral-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..15}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
