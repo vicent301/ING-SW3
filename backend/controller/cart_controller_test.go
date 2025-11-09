@@ -211,3 +211,144 @@ func TestCart_Flow_OK(t *testing.T) {
 		t.Fatalf("clear esper 200, got %d (%s)", w.Code, w.Body.String())
 	}
 }
+
+// -------------------- Ramas DB == nil --------------------
+
+func TestGetCart_DBNil_Returns400(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("alguien@test.com"))
+	r.GET("/api/cart", GetCart)
+
+	// Forzar DB nil
+	database.DB = nil
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/cart", nil))
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("esperaba 400 por DB nil, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestAddToCart_DBNil_Returns400(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("alguien@test.com"))
+	r.POST("/api/cart/add", AddToCart)
+
+	database.DB = nil
+
+	body := `{"product_id":1,"quantity":1}`
+	req := httptest.NewRequest(http.MethodPost, "/api/cart/add", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("esperaba 400 por DB nil, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestRemoveFromCart_DBNil_Returns400(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("alguien@test.com"))
+	r.DELETE("/api/cart/remove", RemoveFromCart)
+
+	database.DB = nil
+
+	body := `{"product_id":1}`
+	req := httptest.NewRequest(http.MethodDelete, "/api/cart/remove", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("esperaba 400 por DB nil, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestClearCart_DBNil_Returns400(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("alguien@test.com"))
+	r.DELETE("/api/cart/clear", ClearCart)
+
+	database.DB = nil
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodDelete, "/api/cart/clear", nil))
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("esperaba 400 por DB nil, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+// -------------------- Ramas usuario NO encontrado --------------------
+
+func TestGetCart_UserNotFound_Returns404(t *testing.T) {
+	testutil.SetupInMemoryDB(t) // DB OK pero sin seed de usuario
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("noexiste@test.com"))
+	r.GET("/api/cart", GetCart)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/cart", nil))
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("esperaba 404 por usuario no encontrado, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestAddToCart_UserNotFound_Returns404(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("noexiste@test.com"))
+	r.POST("/api/cart/add", AddToCart)
+
+	body := `{"product_id":1,"quantity":1}`
+	req := httptest.NewRequest(http.MethodPost, "/api/cart/add", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("esperaba 404 por usuario no encontrado, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestRemoveFromCart_UserNotFound_Returns404(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("noexiste@test.com"))
+	r.DELETE("/api/cart/remove", RemoveFromCart)
+
+	body := `{"product_id":1}`
+	req := httptest.NewRequest(http.MethodDelete, "/api/cart/remove", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("esperaba 404 por usuario no encontrado, got %d (%s)", w.Code, w.Body.String())
+	}
+}
+
+func TestClearCart_UserNotFound_Returns404(t *testing.T) {
+	testutil.SetupInMemoryDB(t)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(withEmail("noexiste@test.com"))
+	r.DELETE("/api/cart/clear", ClearCart)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodDelete, "/api/cart/clear", nil))
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("esperaba 404 por usuario no encontrado, got %d (%s)", w.Code, w.Body.String())
+	}
+}
