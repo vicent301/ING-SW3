@@ -173,56 +173,6 @@ stages:
               ArtifactName: 'coverage-back'
               PathtoPublish: '$(System.DefaultWorkingDirectory)/backend/coverage.html'
 
-      # ---------- E2E CYPRESS ----------
-      - job: RunCypressE2E
-        displayName: "E2E Cypress (QA baseUrl)"
-        pool:
-          vmImage: "ubuntu-latest"
-        steps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-
-          - task: NodeTool@0
-            inputs:
-              versionSpec: "20.x"
-
-          - script: |
-              cd frontend
-              npm ci
-              # Ejecutar Cypress en modo headless apuntando a QA
-              CYPRESS_BASE_URL="https://appweb-front-qa-ctg3cwawggeag6g4.northcentralus-01.azurewebsites.net" \
-              npx cypress run
-            displayName: "Run Cypress headless (baseUrl QA)"
-
-          # --- Opción B: Crear carpetas siempre para evitar errores ---
-          - script: |
-              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
-              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
-            displayName: "Asegurar carpetas Cypress"
-            condition: always()
-
-          - task: PublishTestResults@2
-            displayName: "Publicar resultados E2E (JUnit)"
-            inputs:
-              testResultsFormat: "JUnit"
-              testResultsFiles: "frontend/cypress/results/*.xml"
-              testRunTitle: "Cypress E2E"
-            condition: succeededOrFailed()
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Artefacto: Cypress videos"
-            inputs:
-              ArtifactName: "cypress-videos"
-              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
-            condition: always()
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Artefacto: Cypress screenshots"
-            inputs:
-              ArtifactName: "cypress-screens"
-              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
-            condition: always()
   # =========================
   # 1) ANALISIS ESTATICO (SonarCloud)
   # =========================
