@@ -1,33 +1,32 @@
-# ---- Build stage ----
-FROM golang:1.21-alpine AS builder
+# docker/api/Dockerfile
+# ===== Build stage =====
+FROM golang:1.24.8-alpine AS builder
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GOTOOLCHAIN=auto
 WORKDIR /app
 
-# Dependencias
+# deps necesarias para go mod y certificados
+RUN apk add --no-cache git ca-certificates
+
+# Copiamos módulos primero para cachear mejor
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Código
+# Ahora el resto del código (el contexto del build es la carpeta backend)
 COPY . .
 
-# Compilar binario estático para Linux
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o appweb-backend ./...
+# Compilamos binario estático
+RUN go build -ldflags "-s -w" -o appweb-backend ./cmd/... || go build -ldflags "-s -w" -o appweb-backend .
 
-# ---- Runtime stage ----
+# ===== Runtime stage =====
 FROM alpine:3.20
-# Certificados para TLS (MySQL, etc.)
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
-
-# Copiar binario
 COPY --from=builder /app/appweb-backend /app/appweb-backend
 
-# Puerto de tu API (tu app usa 8080)
-ENV PORT=8080
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null 2>&1 || exit 1
 
-# Usuario no root (opcional)
-# RUN adduser -D -g '' appuser && chown -R appuser:appuser /app
-# USER appuser
-
-# Ejecutar
-CMD ["/app/appweb-backend"]
+ENTRYPOINT ["/app/appweb-backend"]
