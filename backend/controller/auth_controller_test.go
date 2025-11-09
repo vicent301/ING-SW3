@@ -18,10 +18,10 @@ import (
 func TestRegister_BadJSON(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/register", Register)
+	r.POST(RouteRegister, Register)
 
-	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(`{mal json}`))
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest(http.MethodPost, RouteRegister, strings.NewReader(`{mal json}`))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -31,11 +31,11 @@ func TestRegister_BadJSON(t *testing.T) {
 func TestRegister_MissingFields(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/register", Register)
+	r.POST(RouteRegister, Register)
 
 	body := `{"email":"","password":""}`
-	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest(http.MethodPost, RouteRegister, strings.NewReader(body))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -46,10 +46,10 @@ func TestRegister_MissingFields(t *testing.T) {
 func TestLogin_BadJSON(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/login", Login)
+	r.POST(RouteLogin, Login)
 
-	req, _ := http.NewRequest(http.MethodPost, "/login", strings.NewReader(`{`))
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest(http.MethodPost, RouteLogin, strings.NewReader(`{`))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -59,11 +59,11 @@ func TestLogin_BadJSON(t *testing.T) {
 func TestLogin_InvalidCredentials(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/login", Login)
+	r.POST(RouteLogin, Login)
 
 	body := `{"email":"nada@x.com","password":"mala"}`
-	req, _ := http.NewRequest(http.MethodPost, "/login", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest(http.MethodPost, RouteLogin, strings.NewReader(body))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -75,7 +75,7 @@ func TestRegister_OK(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/api/register", Register)
+	r.POST(RouteRegister, Register)
 
 	body := map[string]string{
 		"name":     "Vicente",
@@ -83,8 +83,8 @@ func TestRegister_OK(t *testing.T) {
 		"password": "123456",
 	}
 	b, _ := json.Marshal(body)
-	req := httptest.NewRequest(http.MethodPost, "/api/register", bytes.NewReader(b))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodPost, RouteRegister, bytes.NewReader(b))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -111,15 +111,15 @@ func TestLogin_OK(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/api/login", Login)
+	r.POST(RouteLogin, Login)
 
 	body := map[string]string{
 		"email":    "login@example.com",
 		"password": "clave123",
 	}
 	b, _ := json.Marshal(body)
-	req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(b))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodPost, RouteLogin, bytes.NewReader(b))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -143,12 +143,12 @@ func TestRegister_DuplicateEmail_Returns500(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/api/register", Register)
+	r.POST(RouteRegister, Register)
 
 	body := map[string]string{"name": "Otro", "email": "dup@example.com", "password": "y"}
 	b, _ := json.Marshal(body)
-	req := httptest.NewRequest(http.MethodPost, "/api/register", bytes.NewReader(b))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodPost, RouteRegister, bytes.NewReader(b))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -167,12 +167,12 @@ func TestLogin_WrongPassword_Returns401(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/api/login", Login)
+	r.POST(RouteLogin, Login)
 
 	body := map[string]string{"email": "login@ex.com", "password": "mala"}
 	b, _ := json.Marshal(body)
-	req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(b))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodPost, RouteLogin, bytes.NewReader(b))
+	req.Header.Set(HeaderContentType, MIMEApplicationJSON)
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)

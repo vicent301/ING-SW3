@@ -13,29 +13,29 @@ import (
 )
 
 func getEmailAny(c *gin.Context) (string, bool) {
-	// 1) "email" string
+	// 1) "email"
 	if s, ok := getEmailFromCtx(c); ok {
 		return s, true
 	}
-	// 2) "userEmail" string
+	// 2) "userEmail" (string)
 	if v, ok := c.Get("userEmail"); ok {
-		if s, ok2 := v.(string); ok2 && strings.TrimSpace(s) != "" {
+		if s, ok := getUserEmailString(v); ok {
 			return s, true
 		}
 	}
-	// 3) "user" con distintas formas
+	// 3) "user" en distintos formatos
 	if v, ok := c.Get("user"); ok {
 		switch u := v.(type) {
 		case domain.User:
-			if strings.TrimSpace(u.Email) != "" {
-				return u.Email, true
+			if s, ok := getUserEmailUser(u); ok {
+				return s, true
 			}
 		case *domain.User:
-			if u != nil && strings.TrimSpace(u.Email) != "" {
-				return u.Email, true
+			if s, ok := getUserEmailUserPtr(u); ok {
+				return s, true
 			}
 		case map[string]any:
-			if s, ok2 := u["email"].(string); ok2 && strings.TrimSpace(s) != "" {
+			if s, ok := getUserEmailMap(u); ok {
 				return s, true
 			}
 		}
