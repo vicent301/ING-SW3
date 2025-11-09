@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">30% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">30% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -97,33 +97,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span></td><td class="text"><pre class="prettyprint lang-js">import { setupServer } from 'msw/node';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span></td><td class="text"><pre class="prettyprint lang-js">import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 &nbsp;
 &nbsp;
@@ -131,24 +131,24 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 &nbsp;
 &nbsp;
 export const handlers = [
-http.get(`${API_URL}/api/products`, <span class="fstat-no" title="function not covered" >()</span> =&gt;
-<span class="cstat-no" title="statement not covered" >HttpResponse.json([</span>
+http.get(`${API_URL}/api/products`, () =&gt;
+HttpResponse.json([
 { id: 1, name: 'Nike Air', price: 150, image_url: 'img1.jpg' },
 { id: 2, name: 'Adidas Samba', price: 120, image_url: 'img2.jpg' },
 ])
 ),
-http.get(`${API_URL}/api/cart`, <span class="fstat-no" title="function not covered" >()</span> =&gt;
-<span class="cstat-no" title="statement not covered" >HttpResponse.json({ items: [{ id: 1, product_id: 1, quantity: 2, product: { name: 'Nike Air', price: 150 } }] })</span>
+http.get(`${API_URL}/api/cart`, () =&gt;
+HttpResponse.json({ items: [{ id: 1, product_id: 1, quantity: 2, product: { name: 'Nike Air', price: 150 } }] })
 ),
-http.post(`${API_URL}/api/login`, <span class="fstat-no" title="function not covered" >async </span>({ request }) =&gt; {
-const body = <span class="cstat-no" title="statement not covered" >await request.json();</span>
-<span class="cstat-no" title="statement not covered" >if (body.email === 'test@test.com' &amp;&amp; body.password === '1234') {</span>
-<span class="cstat-no" title="statement not covered" >return HttpResponse.json({ token: 'fake-jwt-token' });</span>
+http.post(`${API_URL}/api/login`, async ({ request }) =&gt; {
+const body = await request.json();
+if (body.email === 'test@test.com' &amp;&amp; body.password === '1234') {
+return HttpResponse.json({ token: 'fake-jwt-token' });
 }
-<span class="cstat-no" title="statement not covered" >return new HttpResponse('Unauthorized', { status: 401 });</span>
+return new HttpResponse('Unauthorized', { status: 401 });
 }),
-http.get(`${API_URL}/api/me`, <span class="fstat-no" title="function not covered" >()</span> =&gt;
-<span class="cstat-no" title="statement not covered" >HttpResponse.json({ id: 1, name: 'Vicente Monzo', email: 'vicente@ucc.com' })</span>
+http.get(`${API_URL}/api/me`, () =&gt;
+HttpResponse.json({ id: 1, name: 'Vicente Monzo', email: 'vicente@ucc.com' })
 ),
 ];
 &nbsp;
@@ -160,7 +160,7 @@ export const server = setupServer(...handlers);</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-07T13:51:39.439Z
+                at 2025-11-09T15:30:09.096Z
             </div>
         <script src="../prettify.js"></script>
         <script>

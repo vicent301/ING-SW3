@@ -1,39 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="8" failures="0" errors="0" time="0.7174397">
-    <testsuite name="src/tests/Carrito.test.jsx" timestamp="2025-11-07T13:51:39.351Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1169093">
-        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; renderiza carrito y calcula total" time="0.0787506">
+<testsuites name="vitest tests" tests="27" failures="0" errors="0" time="0.7926021">
+    <testsuite name="src/tests/api.test.js" timestamp="2025-11-09T15:30:09.016Z" hostname="LAPTOP-3HFPQINV" tests="13" failures="0" errors="0" skipped="0" time="0.0327496">
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getProducts() retorna items (200 OK)" time="0.0044211">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getProductById() retorna un producto" time="0.0010131">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getProducts() lanza error cuando !ok" time="0.0032064">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; login() hace POST y devuelve token" time="0.0051226">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; register(userData) hace POST y devuelve user" time="0.002138">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getProfile() devuelve usuario cuando hay token" time="0.001689">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getProfile() lanza &quot;No token&quot; si no hay token" time="0.0009317">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; addToCart() agrega y devuelve success" time="0.0015196">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getCart() devuelve items" time="0.0008593">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; removeFromCart() elimina ítem" time="0.0011277">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; clearCart() vacía el carrito" time="0.0008532">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; addToCart() lanza error cuando !ok" time="0.0007316">
+        </testcase>
+        <testcase classname="src/tests/api.test.js" name="services/api.js &gt; getCart() lanza error cuando !ok" time="0.0007492">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Carrito.test.jsx" timestamp="2025-11-09T15:30:09.021Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1054666">
+        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; renderiza carrito y calcula total" time="0.0639733">
             <system-out>
 🛒 Respuesta del backend: { items: [ { id: [33m1[39m, product_id: [33m1[39m, quantity: [33m2[39m, product: [36m[Object][39m } ] }
 
             </system-out>
         </testcase>
-        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; permite vaciar el carrito" time="0.0318097">
+        <testcase classname="src/tests/Carrito.test.jsx" name="Carrito &gt; permite vaciar el carrito" time="0.0364223">
             <system-out>
 🛒 Respuesta del backend: { items: [ { id: [33m1[39m, product_id: [33m1[39m, quantity: [33m2[39m, product: [36m[Object][39m } ] }
 
             </system-out>
         </testcase>
     </testsuite>
-    <testsuite name="src/tests/Login.test.jsx" timestamp="2025-11-07T13:51:39.354Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1329486">
-        <testcase classname="src/tests/Login.test.jsx" name="login exitoso guarda token y redirige" time="0.0972306">
+    <testsuite name="src/tests/Login.test.jsx" timestamp="2025-11-09T15:30:09.022Z" hostname="LAPTOP-3HFPQINV" tests="2" failures="0" errors="0" skipped="0" time="0.1151305">
+        <testcase classname="src/tests/Login.test.jsx" name="login exitoso guarda token y redirige" time="0.0769327">
         </testcase>
-        <testcase classname="src/tests/Login.test.jsx" name="muestra error si las credenciales son inválidas" time="0.0307393">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/tests/Navbar.test.jsx" timestamp="2025-11-07T13:51:39.355Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1577859">
-        <testcase classname="src/tests/Navbar.test.jsx" name="Navbar &gt; muestra nombre del usuario y cantidad del carrito" time="0.1530451">
+        <testcase classname="src/tests/Login.test.jsx" name="muestra error si las credenciales son inválidas" time="0.0332755">
         </testcase>
     </testsuite>
-    <testsuite name="src/tests/Productos.test.jsx" timestamp="2025-11-07T13:51:39.355Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.0905926">
-        <testcase classname="src/tests/Productos.test.jsx" name="renderiza productos y permite agregar al carrito" time="0.0848393">
+    <testsuite name="src/tests/Navbar.test.jsx" timestamp="2025-11-09T15:30:09.024Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1553042">
+        <testcase classname="src/tests/Navbar.test.jsx" name="Navbar &gt; muestra nombre del usuario y cantidad del carrito" time="0.1509991">
         </testcase>
     </testsuite>
-    <testsuite name="src/tests/ProtectedRoute.test.jsx" timestamp="2025-11-07T13:51:39.356Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.0578042">
-        <testcase classname="src/tests/ProtectedRoute.test.jsx" name="redirige al login si no hay token" time="0.053157">
+    <testsuite name="src/tests/Productos.test.jsx" timestamp="2025-11-09T15:30:09.024Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.0835242">
+        <testcase classname="src/tests/Productos.test.jsx" name="renderiza productos y permite agregar al carrito" time="0.0789956">
         </testcase>
     </testsuite>
-    <testsuite name="src/tests/Register.test.jsx" timestamp="2025-11-07T13:51:39.356Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1613991">
-        <testcase classname="src/tests/Register.test.jsx" name="Register &gt; envía el formulario y navega a /login" time="0.1554941">
+    <testsuite name="src/tests/ProtectedRoute.test.jsx" timestamp="2025-11-09T15:30:09.025Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.0616781">
+        <testcase classname="src/tests/ProtectedRoute.test.jsx" name="redirige al login si no hay token" time="0.0554594">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/Register.test.jsx" timestamp="2025-11-09T15:30:09.025Z" hostname="LAPTOP-3HFPQINV" tests="1" failures="0" errors="0" skipped="0" time="0.1491144">
+        <testcase classname="src/tests/Register.test.jsx" name="Register &gt; envía el formulario y navega a /login" time="0.1427821">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/server.test.js" timestamp="2025-11-09T15:30:09.026Z" hostname="LAPTOP-3HFPQINV" tests="6" failures="0" errors="0" skipped="0" time="0.0896345">
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; retorna lista de productos" time="0.047793">
+        </testcase>
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; retorna carrito con un item mockeado" time="0.0066883">
+        </testcase>
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; login correcto devuelve un token" time="0.0068431">
+        </testcase>
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; login incorrecto debería retornar 401" time="0.0068234">
+        </testcase>
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; retorna perfil del usuario" time="0.0067952">
+        </testcase>
+        <testcase classname="src/tests/server.test.js" name="MSW Server - Handlers &gt; maneja error del servidor en /products" time="0.0076901">
         </testcase>
     </testsuite>
 </testsuites>
