@@ -15,7 +15,7 @@ import (
 func GetDSN() string {
 	// Variables de entorno (con fallback por si corrés local)
 	dbUser := getEnv("DB_USER", "root")
-	dbPassword := getEnv("DB_PASSWORD", "root")
+	dbPassword := getEnv("DB_PASSWORD", "renzo4040")
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "tienda")

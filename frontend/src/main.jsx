@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import "./index.css";
+import { Toaster } from "react-hot-toast";
+
 
 // 🧩 Páginas
 import Home from "./pages/Home";
@@ -55,5 +57,7 @@ function App() {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
+        <Toaster position="top-right" />
+
   </React.StrictMode>
 );

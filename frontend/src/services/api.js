@@ -1,6 +1,6 @@
-// Lee la URL desde la variable de entorno en tiempo de build
-// frontend/src/services/api.js
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+// URL base del backend (sin /api)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 
 // 🛍️ Productos
 export async function getProducts() {
@@ -14,6 +14,7 @@ export async function getProductById(id) {
   if (!res.ok) throw new Error("Error al obtener producto");
   return res.json();
 }
+
 
 // 🔐 Autenticación
 export async function login(email, password) {
@@ -36,21 +37,22 @@ export async function register(userData) {
   return res.json();
 }
 
-// 👤 Perfil del usuario logueado
+
+// 👤 Perfil del usuario
 export async function getProfile() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
-  
+
   const res = await fetch(`${API_URL}/api/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (!res.ok) throw new Error("Error al obtener perfil");
   return res.json();
 }
 
 
-
-//agrega producto al carrito
+// 🛒 Agregar producto al carrito
 export async function addToCart(productId, quantity = 1) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
@@ -67,7 +69,9 @@ export async function addToCart(productId, quantity = 1) {
   if (!res.ok) throw new Error("Error al agregar producto al carrito");
   return res.json();
 }
-// 🛒 Obtener el carrito actual
+
+
+// 🛒 Obtener carrito
 export async function getCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
@@ -75,11 +79,13 @@ export async function getCart() {
   const res = await fetch(`${API_URL}/api/cart`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (!res.ok) throw new Error("Error al obtener carrito");
   return res.json();
 }
 
-// ❌ Eliminar un producto del carrito
+
+// ❌ Eliminar producto del carrito
 export async function removeFromCart(productId) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
@@ -97,7 +103,8 @@ export async function removeFromCart(productId) {
   return res.json();
 }
 
-// 🧹 Vaciar el carrito completo
+
+// 🧹 Vaciar carrito
 export async function clearCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");

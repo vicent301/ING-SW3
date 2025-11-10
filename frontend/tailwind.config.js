@@ -2,10 +2,13 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}", // 👈 importante el jsx acá
+    "./src/**/*.{js,jsx,ts,tsx}",
+      // 👈 importante el jsx acá
   ],
   theme: {
     extend: {},
+     colors: {
+    }
   },
   plugins: [],
 };

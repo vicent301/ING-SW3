@@ -4,15 +4,14 @@ import { useState, useEffect } from "react";
 import { getProfile, getCart } from "../services/api";
 
 export default function Navbar() {
-  const [hovered, setHovered] = useState(null);
   const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const categories = [
-    { name: "Calzado", items: ["Zapatillas", "Botas", "Sandalias", "Ver Todo"] },
-    { name: "Indumentaria", items: ["Remeras", "Buzos", "Pantalones", "Camperas", "Ver Todo"] },
-    { name: "Accesorios", items: ["Gorros", "Medias", "Mochilas", "Riñoneras", "Ver Todo"] },
+    { name: "Calzado", link: "/products" },
+    { name: "Indumentaria", link: "/products" },
   ];
 
   useEffect(() => {
@@ -20,15 +19,18 @@ export default function Navbar() {
       try {
         const userData = await getProfile();
         setUser(userData);
-
         const cartData = await getCart();
         setCartCount(cartData.items?.length || 0);
-      } catch (err) {
-        // sin token o 401 -> ignorar
-      }
+      } catch {}
     }
     loadData();
   }, []);
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      navigate(`/products?search=${encodeURIComponent(search)}`);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -40,87 +42,75 @@ export default function Navbar() {
     <header
       className="sticky top-0 z-50 w-full backdrop-blur-md shadow-md border-b border-neutral-300"
       style={{
-        background: "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
+        background:
+          "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(230,230,230,0.8) 100%)",
         color: "#111",
       }}
-      data-testid="navbar"
     >
-      <nav className="max-w-[1600px] mx-auto px-16 py-5 flex justify-between items-center">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="text-4xl font-extrabold tracking-tight transition duration-300 hover:opacity-90"
-          style={{
-            background: "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            fontFamily: "'Anton', sans-serif",
-            letterSpacing: "1px",
-          }}
-          data-testid="logo-home"
-        >
-          ZapaStore
-        </Link>
+      <nav className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-10 py-4 flex items-center gap-4">
+        {/* Columna 1: Logo */}
+        <div className="min-w-[140px] flex">
+          <Link
+            to="/"
+            className="text-3xl md:text-4xl font-extrabold tracking-tight transition hover:opacity-90"
+            style={{
+              background:
+                "linear-gradient(90deg, #000000 0%, #333333 50%, #666666 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              fontFamily: "'Anton', sans-serif",
+              letterSpacing: "1px",
+            }}
+          >
+            ZapaStore
+          </Link>
+        </div>
 
-        {/* Categorías */}
-        <ul className="hidden md:flex gap-12 text-base font-semibold uppercase tracking-wide">
+        {/* Columna 2: Categorías centradas */}
+        <ul className="flex-1 flex justify-center gap-8 md:gap-12 text-sm md:text-base font-semibold uppercase tracking-wide">
           {categories.map((cat) => (
-            <li
-              key={cat.name}
-              onMouseEnter={() => setHovered(cat.name)}
-              onMouseLeave={() => setHovered(null)}
-              className="relative cursor-pointer hover:text-gray-700 transition"
-            >
-              {cat.name}
-              {hovered === cat.name && (
-                <div className="absolute left-0 top-full mt-2 bg-white/80 text-gray-900 rounded-md shadow-lg py-4 px-6 grid grid-cols-1 gap-2 w-48 border border-gray-300 animate-fadeIn backdrop-blur-md">
-                  {cat.items.map((item) => (
-                    <Link
-                      key={item}
-                      to={`/products/${item.toLowerCase()}`}
-                      className="hover:text-gray-600 transition text-sm"
-                    >
-                      {item}
-                    </Link>
-                  ))}
-                </div>
-              )}
+            <li key={cat.name}>
+              <Link
+                to={cat.link}
+                className="hover:text-gray-700 transition relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 hover:after:w-full after:bg-gray-800 after:transition-all"
+              >
+                {cat.name}
+              </Link>
             </li>
           ))}
         </ul>
 
-        {/* Search + Icons */}
-        <div className="flex items-center gap-6 pr-6">
-          {/* Search */}
-          <div className="hidden md:flex items-center bg-white/40 rounded-full px-4 py-2 shadow-sm backdrop-blur-md">
-            <Search size={18} className="text-gray-700" />
+        {/* Columna 3: Buscador + iconos */}
+        <div className="min-w-[210px] flex items-center justify-end gap-4">
+          <div className="hidden md:flex items-center bg-white/50 rounded-full px-3 py-2 shadow-sm backdrop-blur">
+            <Search size={16} className="text-gray-700" />
             <input
               type="text"
               placeholder="Buscar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearch}
               className="bg-transparent text-sm text-gray-800 px-2 focus:outline-none w-28"
-              data-testid="search-input"
             />
           </div>
 
-          {/* Usuario */}
           {user ? (
-            <div className="flex items-center gap-4">
-              <span className="font-semibold text-sm" data-testid="greeting">Hola, {user.name}</span>
-              <button onClick={handleLogout} title="Cerrar sesión" data-testid="logout-button">
-                <LogOut size={22} className="text-gray-700 hover:text-black transition" />
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="font-semibold text-sm">Hola, {user.name}</span>
+              <button onClick={handleLogout} title="Cerrar sesión">
+                <LogOut size={20} className="text-gray-700 hover:text-black transition" />
               </button>
             </div>
           ) : (
-            <Link to="/login" className="hover:text-gray-700 transition" data-testid="nav-login">
-              <User size={24} />
+            <Link to="/login" className="hover:text-gray-700 transition">
+              <User size={22} />
             </Link>
           )}
 
-          {/* Carrito */}
-          <Link to="/carrito" className="hover:text-gray-700 transition relative" data-testid="navbar-cart">
-            <ShoppingCart size={24} />
+          <Link to="/carrito" className="hover:text-gray-700 transition relative">
+            <ShoppingCart size={22} />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gray-700 text-white text-xs font-bold rounded-full px-1.5" data-testid="cart-badge">
+              <span className="absolute -top-2 -right-2 bg-gray-800 text-white text-xs font-bold rounded-full px-1.5">
                 {cartCount}
               </span>
             )}
