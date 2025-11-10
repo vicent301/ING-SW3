@@ -1,30 +1,55 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import Productos from '../pages/Productos';
+// src/tests/Productos.test.jsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { vi } from 'vitest';
+import Productos from '../pages/Productos';
 
-
-vi.mock('../services/api', async () => {
-const actual = await vi.importActual('../services/api');
-return {
-...actual,
-getProducts: vi.fn(() => Promise.resolve([
-{ id: 1, name: 'Nike Air', price: 150, image_url: 'img1.jpg' },
-])),
-addToCart: vi.fn(() => Promise.resolve({ success: true })),
-};
+// Mock react-hot-toast (SIN variables externas)
+vi.mock('react-hot-toast', () => {
+  const toast = Object.assign(() => {}, {
+    success: vi.fn(),
+    error: vi.fn(),
+  });
+  return {
+    __esModule: true,
+    default: toast,
+    Toaster: () => null,
+  };
 });
 
+// Mock services/api
+vi.mock('../services/api', async () => {
+  const actual = await vi.importActual('../services/api');
+  return {
+    ...actual,
+    getProducts: vi.fn(async () => [
+      { id: 1, name: 'Nike Air', description: 'zapa', price: 150, image_url: 'img1.jpg' },
+    ]),
+    addToCart: vi.fn(async () => ({ success: true })),
+  };
+});
+
+import toast from 'react-hot-toast';
+import { addToCart } from '../services/api';
 
 test('renderiza productos y permite agregar al carrito', async () => {
-render(<Productos />);
-expect(screen.getByText(/Cargando productos/)).toBeInTheDocument();
+  render(
+    <MemoryRouter initialEntries={['/products']}>
+      <Routes>
+        <Route path="/products" element={<Productos />} />
+      </Routes>
+    </MemoryRouter>
+  );
 
+  // aparece el producto mockeado
+  expect(await screen.findByText('Nike Air')).toBeInTheDocument();
 
-await waitFor(() => screen.getByText('Nike Air'));
-expect(screen.getByText('Nike Air')).toBeInTheDocument();
+  // click en Agregar
+  fireEvent.click(screen.getByRole('button', { name: /agregar al carrito/i }));
 
-
-const button = screen.getByText(/Agregar al carrito/);
-fireEvent.click(button);
-await waitFor(() => screen.getByText(/Producto agregado al carrito/));
+  // ⚠️ ambos asserts deben esperar al tick asíncrono
+  await waitFor(() => expect(addToCart).toHaveBeenCalledWith(1, 1));
+  await waitFor(() =>
+    expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/Producto agregado/i))
+  );
 });
