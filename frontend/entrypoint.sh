@@ -8,5 +8,3 @@ window.__ENV = {
 };
 EOF
 
-# Arrancar nginx en primer plano
-exec nginx -g 'daemon off;'
