@@ -232,60 +232,60 @@ stages:
   # =========================
   # 2) (Opcional) BUILD ZIPS (no usados por contenedores, lo dejo por compatibilidad)
   # =========================
-  - stage: Build
-    displayName: "Build Front + Back"
-    dependsOn: Static_Analysis_SonarCloud
-    condition: succeeded()
-    jobs:
-      - job: BuildJob
-        pool: { vmImage: 'ubuntu-latest' }
-        steps:
+  #- stage: Build
+   # displayName: "Build Front + Back"
+   # dependsOn: Static_Analysis_SonarCloud
+    #condition: succeeded()
+    #jobs:
+     # - job: BuildJob
+      #  pool: { vmImage: 'ubuntu-latest' }
+       # steps:
           # --- Backend (Go) ---
-          - task: GoTool@0
-            inputs: { version: '1.24.8' }
-          - script: |
-              cd backend
-              go mod download
-              go build -o appweb-backend
-            displayName: 'Build Go backend'
+        #  - task: GoTool@0
+          #  inputs: { version: '1.24.8' }
+         # - script: |
+         #     cd backend
+          #    go mod download
+          #    go build -o appweb-backend
+          #  displayName: 'Build Go backend'
 
-          - task: ArchiveFiles@2
-            inputs:
-              rootFolderOrFile: 'backend'
-              includeRootFolder: false
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
-            displayName: 'Empaquetar backend'
+         # - task: ArchiveFiles@2
+         #   inputs:
+         #     rootFolderOrFile: 'backend'
+         #     includeRootFolder: false
+         #     archiveType: 'zip'
+         #     archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
+         #   displayName: 'Empaquetar backend'
 
           # --- Frontend (Vite) ---
-          - task: NodeTool@0
-            inputs: { versionSpec: '20.x' }
-          - script: |
-              cd frontend
-              npm ci
-              VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api npm run build
-            displayName: 'Build Front en Vite'
+          #- task: NodeTool@0
+          #  inputs: { versionSpec: '20.x' }
+          #- script: |
+           #   cd frontend
+            #  npm ci
+             # VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api npm run build
+            #displayName: 'Build Front en Vite'
 
-          - task: ArchiveFiles@2
-            inputs:
-              rootFolderOrFile: 'frontend/dist'
-              includeRootFolder: false
-              archiveType: 'zip'
-              archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
-            displayName: 'Empaquetar frontend'
+          #- task: ArchiveFiles@2
+           # inputs:
+            #  rootFolderOrFile: 'frontend/dist'
+             # includeRootFolder: false
+              #archiveType: 'zip'
+              #archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
+            #displayName: 'Empaquetar frontend'
 
-          - task: PublishBuildArtifacts@1
-            inputs:
-              ArtifactName: 'drop'
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-            displayName: 'Publicar artefactos'
+         # - task: PublishBuildArtifacts@1
+          #  inputs:
+           #   ArtifactName: 'drop'
+            #  PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            #displayName: 'Publicar artefactos'
 
   # =========================
   # 3) DOCKER BUILD & PUSH (BACK + FRONT)
   # =========================
   - stage: DockerBuildAndPush
+    dependsOn: Static_Analysis_SonarCloud
     displayName: 'Construir y Subir Imágenes Docker a ACR'
-    dependsOn: Build
     jobs:
       - job: docker_build_and_push
         displayName: 'Docker build & push'
