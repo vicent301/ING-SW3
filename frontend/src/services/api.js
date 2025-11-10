@@ -1,24 +1,22 @@
-// URL base del backend (sin /api)
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-
+// src/api/api.js
+import { apiUrl } from '../lib/apiBase';
 
 // 🛍️ Productos
 export async function getProducts() {
-  const res = await fetch(`${API_URL}/api/products`);
+  const res = await fetch(apiUrl('products'));
   if (!res.ok) throw new Error("Error al obtener productos");
   return res.json();
 }
 
 export async function getProductById(id) {
-  const res = await fetch(`${API_URL}/api/products/${id}`);
+  const res = await fetch(apiUrl(`products/${id}`));
   if (!res.ok) throw new Error("Error al obtener producto");
   return res.json();
 }
 
-
 // 🔐 Autenticación
 export async function login(email, password) {
-  const res = await fetch(`${API_URL}/api/login`, {
+  const res = await fetch(apiUrl('login'), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -28,7 +26,7 @@ export async function login(email, password) {
 }
 
 export async function register(userData) {
-  const res = await fetch(`${API_URL}/api/register`, {
+  const res = await fetch(apiUrl('register'), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -37,27 +35,24 @@ export async function register(userData) {
   return res.json();
 }
 
-
-// 👤 Perfil del usuario
+// 👤 Perfil
 export async function getProfile() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/api/me`, {
+  const res = await fetch(apiUrl('me'), {
     headers: { Authorization: `Bearer ${token}` },
   });
-
   if (!res.ok) throw new Error("Error al obtener perfil");
   return res.json();
 }
 
-
-// 🛒 Agregar producto al carrito
+// 🛒 Carrito
 export async function addToCart(productId, quantity = 1) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/api/cart/add`, {
+  const res = await fetch(apiUrl('cart/add'), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -65,32 +60,26 @@ export async function addToCart(productId, quantity = 1) {
     },
     body: JSON.stringify({ product_id: productId, quantity }),
   });
-
   if (!res.ok) throw new Error("Error al agregar producto al carrito");
   return res.json();
 }
 
-
-// 🛒 Obtener carrito
 export async function getCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/api/cart`, {
+  const res = await fetch(apiUrl('cart'), {
     headers: { Authorization: `Bearer ${token}` },
   });
-
   if (!res.ok) throw new Error("Error al obtener carrito");
   return res.json();
 }
 
-
-// ❌ Eliminar producto del carrito
 export async function removeFromCart(productId) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/api/cart/remove`, {
+  const res = await fetch(apiUrl('cart/remove'), {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -98,22 +87,18 @@ export async function removeFromCart(productId) {
     },
     body: JSON.stringify({ product_id: productId }),
   });
-
   if (!res.ok) throw new Error("Error al eliminar producto");
   return res.json();
 }
 
-
-// 🧹 Vaciar carrito
 export async function clearCart() {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token");
 
-  const res = await fetch(`${API_URL}/api/cart/clear`, {
+  const res = await fetch(apiUrl('cart/clear'), {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-
   if (!res.ok) throw new Error("Error al vaciar carrito");
   return res.json();
 }
