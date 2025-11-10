@@ -428,7 +428,7 @@ stages:
                       az webapp config appsettings set \
                         --name $(webAppFrontQA) \
                         --resource-group $(resourceGroup) \
-                        --settings API_URL="https://https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net/api"
+                        --settings API_URL="https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net"
 
   # =========================
   # 5) DEPLOY PROD — Web App for Containers (aprobación en Environment)
@@ -509,4 +509,4 @@ stages:
                       az webapp config appsettings set \
                         --name $(webAppFrontPROD) \
                         --resource-group $(resourceGroup) \
-                        --settings API_URL="https://cont-front-prod-egfrgqhgc9c7dac8.chilecentral-01.azurewebsites.net/api"
+                        --settings API_URL="https://cont-front-prod-egfrgqhgc9c7dac8.chilecentral-01.azurewebsites.net"
