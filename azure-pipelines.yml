@@ -509,4 +509,4 @@ stages:
                       az webapp config appsettings set \
                         --name $(webAppFrontPROD) \
                         --resource-group $(resourceGroup) \
-                        --settings API_URL="https://cont-front-prod-egfrgqhgc9c7dac8.chilecentral-01.azurewebsites.net"
+                        --settings API_URL="https://cont-api-prod-hqgzgzb2cdbegdag.chilecentral-01.azurewebsites.net"
