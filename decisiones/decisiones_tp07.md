@@ -65,52 +65,20 @@ TEST DE CREAR CARRITO (VA AL CATALOGO, AGREGA PRODUCTO Y CORROBORA EL TOTAL)
     - bugs
     - cobertura combinada del proyecto
 
-    Una decisión importante fue que la pipeline solo continúe si el “Quality Gate” está en verde. Esto replica procesos reales de calidad donde no se permite avanzar si el código no cumple estándares mínimos.
+    Una decisión importante fue que el pipeline solo continúe si el “Quality Gate” está en verde. Esto replica procesos reales de calidad donde no se permite avanzar si el código no cumple estándares mínimos.
 
+Issues detectadas por sonarcloud al correr el pipline, se resolvio la de auth_controler y la de conexion a la db.
 ![alt text](image-5.png)
 ![alt text](image-6.png)
 ![alt text](image-7.png)
 
-#Build del frontend y backend 
-    Luego de validar el código, configuramos el stage de build.
-    En el backend simplemente compilamos el ejecutable con Go.
-    En el frontend usamos Vite, agregando la variable VITE_API_URL = https://appweb-api-qa.azurewebsites.net/api  para que cada build apunte al ambiente correcto (QA o Producción).
-
-    El resultado fueron dos artefactos ZIP:
-    - backend.zip
-    - frontend.zip
-
-    Estos archivos son reproducibles independientemente de en qué máquina se ejecuten, lo cual es clave en un pipeline profesional.  
-
-
-#Deploy automático a QA
-    QA se despliega automáticamente cuando los stages anteriores pasan correctamente. Osea los test, coverage y sonarcloud. Azure se despliega directamente.
-
-    Creamos Variable Groups para QA, donde configuramos:
-    - datos de la base de datos
-    - credenciales
-    - URLs
-    - nombres de las Web Apps
-
-    Luego usamos AzureWebApp@1 para enviar los ZIP al App Service correspondiente.
-    Después del deploy, realizamos un healthcheck con un bucle que consulta /api/healthz.
-    Si la API no responde 200 en un tiempo razonable, el pipeline falla.
-
-
-#Deploy manual a Producción
-    Para Producción optamos por un enfoque más conservador:
-    el deploy no se ejecuta automáticamente. Azure DevOps pide una aprobación manual desde la sección Environments.
-
-    Este mecanismo refleja cómo se manejan los despliegues reales, donde una persona supervisa que el QA esté funcionando antes de liberar la versión a los usuarios finales.
-
-    El proceso de deploy en sí es igual al de QA, cambiando únicamente los valores del Variable Group de producción y la URL del backend.
 
 #Conclusion 
-    Como resultado obtuvimos na pipeline de CI/CD completo, con varias capas de pruebas, análisis estático y despliegues automáticos. Aprendimos como separar ambiente de Qa y de prod por medio de las Variable Groups, para mantener ambos ambientes completamente aislados. También incorporamos healthchecks para asegurar la confiabilidad de la aplicación luego del deploy.
-
+    Como resultado obtuvimos un pipeline de CI/CD completo, con varias capas de pruebas, análisis estático y despliegues automáticos. 
     El resultado final es un pipeline profesional, claro y completamente automatizado. Es una experiencia que nos permite entender cómo se trabaja en la industria y que nos sirvió para integrar conocimientos de testing, calidad y despliegue continuo.
 
     Imagenes coverage en el pipeline de Azure 
 
 ![alt text](image-8.png)
 ![alt text](image-9.png)
+![alt text](image-14.png)

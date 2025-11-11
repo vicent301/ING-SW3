@@ -3,7 +3,6 @@ Ingeniería de Software 3 – Universidad Católica de Córdoba
 Autores: Simón Barrale y Vicente Monzó
 
 
-
     En este trabajo práctico extendimos la arquitectura y el pipeline que desarrollamos en el TP07, integrando ahora contenedores Docker, Azure Container Registry (ACR) y despliegues automáticos de imágenes Docker a Azure App Service.
     El objetivo fue evolucionar desde un pipeline basado en archivos ZIP hacia uno completamente contenedorizado, similar al que utilizan empresas reales para separar entornos, versionar imágenes y automatizar deploys.
 
@@ -20,9 +19,6 @@ Decidimos continuar utilizando:
 - Hosting: Azure App Service (Linux + Docker)
 
 
-    Elegimos App Service en lugar de Kubernetes porque la consigna pedía explícitamente trabajar con contenedores simples por ambiente, sin orquestadores complejos.
-
-    También seleccionamos un ACR único para ambos ambientes, pero imágenes distintas para QA y Producción, lo que nos permitió mantener un verdadero pipeline multiambiente.
 
 #Dockerización del Backend (Go)
 
@@ -58,21 +54,11 @@ Creamos un registry llamado:
     acreccommerce
 
     Este recurso es donde se almacenan todas las imágenes generadas por el pipeline.
-    Cada build crea cuatro imágenes nuevas:
+    Cada build crea dos imágenes nuevas:
 
-        - backend QA
-        - backend PROD
-        - frontend QA
-        - frontend PROD
-{
-Y cada imagen se versiona automáticamente con:
-qa-$(Build.BuildId)
-latest-qa
-prod-$(Build.BuildId)
-latest-prod
+        - backend 
+        - frontend 
 
-El uso de BuildId garantiza que todas las builds quedan registradas.
-}
 IMAGEN EN AZURE DEL ACR
 ![alt text](image-12.png)
 
@@ -89,28 +75,6 @@ IMAGEN EN AZURE DEL ACR
 
     Todas están configuradas para recibir imágenes Docker directamente desde ACR.
 
-   
-
-#Variable Groups para QA y Producción
-
-    Creamos dos grupos:
-    VG_QA
-
-    Contiene:
-    - Credenciales de la base de datos QA
-    - Nombre del resource group
-    - Datos del ACR
-    - Nombre de las Web Apps de QA
-    - VITE_API_URL_QA
-
-    VG_PROD
-    Con los datos equivalentes, pero apuntando a Producción.
-
-    Esto permitió que el mismo pipeline tome decisiones distintas según el ambiente sin modificar el código.
-VARIABLES DE ENTORNO DEL CONTENEDOR DEL FRONT DE QA
-![alt text](image-10.png)
-LIBRERIA DE AZURE QUE MUESTRA EL GRUPO DE VARIABLES
-![alt text](image-11.png)
 
 
 #Pipeline: Build & Push de Imágenes (TP08)
@@ -126,7 +90,7 @@ LIBRERIA DE AZURE QUE MUESTRA EL GRUPO DE VARIABLES
     Apenas se hace un push a la rama main, el pipeline:
 
     - obtiene el commit
-    -  genera cuatro imágenes nuevas
+    -  genera dos imágenes nuevas
     -  las envía al ACR
     -  deja todo listo para desplegar QA y PROD
 
@@ -136,20 +100,17 @@ LIBRERIA DE AZURE QUE MUESTRA EL GRUPO DE VARIABLES
     Una vez generadas las imágenes, el pipeline actualiza directamente las Web Apps seleccionadas para QA.
 
     Usamos Azure CLI para:
-
     - asignar la imagen correcta a la Web App
     - actualizar variables de entorno
     - configurar el puerto del contenedor (WEBSITES_PORT)
     - reiniciar la app automáticamente
 
     Luego hacemos un health check contra:
-
     https://cont-api-qa.azurewebsites.net/api/healthz
-
     El pipeline solo continúa si devuelve HTTP 200.
     Si falla, la pipeline marca el deploy como fallido.
 
-    Deploy manual a Producción
+#Deploy manual a Producción
 
     A diferencia de QA, Producción requiere aprobación manual, tal como se hace en empresas reales.
 
