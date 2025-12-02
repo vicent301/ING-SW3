@@ -226,7 +226,7 @@ stages:
               dockerfile: $(Build.SourcesDirectory)/docker/api/Dockerfile
               buildContext: $(Build.SourcesDirectory)/backend
               tags: |
-                $(imageTag)              # <<< CAMBIO: un solo tag
+                $(imageTag)             
 
           - task: Docker@2
             displayName: 'Push imagen Backend'
@@ -234,7 +234,7 @@ stages:
               command: push
               repository: $(acrLoginServer)/$(backImageName)
               tags: |
-                $(imageTag)              # <<< CAMBIO
+                $(imageTag)              
 
           # Frontend
           - task: Docker@2
@@ -245,7 +245,7 @@ stages:
               dockerfile: $(Build.SourcesDirectory)/docker/front/Dockerfile
               buildContext: $(Build.SourcesDirectory)/frontend
               tags: |
-                $(imageTag)              # <<< CAMBIO
+                $(imageTag)              
 
           - task: Docker@2
             displayName: 'Push imagen Frontend'
@@ -253,7 +253,7 @@ stages:
               command: push
               repository: $(acrLoginServer)/$(frontImageName)
               tags: |
-                $(imageTag)              # <<< CAMBIO
+                $(imageTag)              
 
   # =========================
   # 4) DEPLOY QA — Web App for Containers
