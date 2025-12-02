@@ -86,53 +86,6 @@ stages:
               ArtifactName: "coverage-front"
               PathtoPublish: "frontend/coverage"
 
-      # ---------- E2E CYPRESS ----------
-      - job: RunCypressE2E
-        displayName: "E2E Cypress (QA baseUrl)"
-        pool: { vmImage: "ubuntu-latest" }
-        steps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-
-          - task: NodeTool@0
-            inputs: { versionSpec: "20.x" }
-
-          - script: |
-              cd frontend
-              npm ci
-              CYPRESS_BASE_URL="https://appweb-front-qa-ctg3cwawggeag6g4.northcentralus-01.azurewebsites.net" \
-              npx cypress run
-            displayName: "Run Cypress headless (baseUrl QA)"
-
-          - script: |
-              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
-              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
-            displayName: "Asegurar carpetas Cypress"
-            condition: always()
-
-          - task: PublishTestResults@2
-            displayName: "Publicar resultados E2E (JUnit)"
-            inputs:
-              testResultsFormat: "JUnit"
-              testResultsFiles: "frontend/cypress/results/*.xml"
-              testRunTitle: "Cypress E2E"
-            condition: succeededOrFailed()
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Artefacto: Cypress videos"
-            inputs:
-              ArtifactName: "cypress-videos"
-              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
-            condition: always()
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Artefacto: Cypress screenshots"
-            inputs:
-              ArtifactName: "cypress-screens"
-              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
-            condition: always()
-
       # ---------- BACKEND ----------
       - job: RunBackendTests
         displayName: "Pruebas Backend"
@@ -214,7 +167,7 @@ stages:
           - task: SonarCloudPrepare@2
             displayName: "SonarCloud Prepare"
             inputs:
-              SonarCloud: 'SonarClound'   # <- usando tu service connection EXACTO
+              SonarCloud: 'SonarClound'
               organization: 'simons15'
               scannerMode: 'CLI'
               configMode: 'manual'
@@ -230,55 +183,17 @@ stages:
               pollingTimeoutSec: '300'
 
   # =========================
-  # 2) (Opcional) BUILD ZIPS (no usados por contenedores, lo dejo por compatibilidad)
+  # 2) (Opcional) BUILD ZIPS
   # =========================
-  #- stage: Build
-   # displayName: "Build Front + Back"
-   # dependsOn: Static_Analysis_SonarCloud
-    #condition: succeeded()
-    #jobs:
-     # - job: BuildJob
-      #  pool: { vmImage: 'ubuntu-latest' }
-       # steps:
-          # --- Backend (Go) ---
-        #  - task: GoTool@0
-          #  inputs: { version: '1.24.8' }
-         # - script: |
-         #     cd backend
-          #    go mod download
-          #    go build -o appweb-backend
-          #  displayName: 'Build Go backend'
-
-         # - task: ArchiveFiles@2
-         #   inputs:
-         #     rootFolderOrFile: 'backend'
-         #     includeRootFolder: false
-         #     archiveType: 'zip'
-         #     archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
-         #   displayName: 'Empaquetar backend'
-
-          # --- Frontend (Vite) ---
-          #- task: NodeTool@0
-          #  inputs: { versionSpec: '20.x' }
-          #- script: |
-           #   cd frontend
-            #  npm ci
-             # VITE_API_URL=https://appweb-api-qa-cjc6b0hpbkbxgvf6.northcentralus-01.azurewebsites.net/api npm run build
-            #displayName: 'Build Front en Vite'
-
-          #- task: ArchiveFiles@2
-           # inputs:
-            #  rootFolderOrFile: 'frontend/dist'
-             # includeRootFolder: false
-              #archiveType: 'zip'
-              #archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
-            #displayName: 'Empaquetar frontend'
-
-         # - task: PublishBuildArtifacts@1
-          #  inputs:
-           #   ArtifactName: 'drop'
-            #  PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-            #displayName: 'Publicar artefactos'
+  # - stage: Build
+  #   displayName: "Build Front + Back"
+  #   dependsOn: Static_Analysis_SonarCloud
+  #   condition: succeeded()
+  #   jobs:
+  #     - job: BuildJob
+  #       pool: { vmImage: 'ubuntu-latest' }
+  #       steps:
+  #         ...
 
   # =========================
   # 3) DOCKER BUILD & PUSH (BACK + FRONT)
@@ -311,9 +226,7 @@ stages:
               dockerfile: $(Build.SourcesDirectory)/docker/api/Dockerfile
               buildContext: $(Build.SourcesDirectory)/backend
               tags: |
-                $(imageTag)
-                qa
-                prod
+                $(imageTag)              # <<< CAMBIO: un solo tag
 
           - task: Docker@2
             displayName: 'Push imagen Backend'
@@ -321,9 +234,7 @@ stages:
               command: push
               repository: $(acrLoginServer)/$(backImageName)
               tags: |
-                $(imageTag)
-                qa
-                prod
+                $(imageTag)              # <<< CAMBIO
 
           # Frontend
           - task: Docker@2
@@ -334,9 +245,7 @@ stages:
               dockerfile: $(Build.SourcesDirectory)/docker/front/Dockerfile
               buildContext: $(Build.SourcesDirectory)/frontend
               tags: |
-                $(imageTag)
-                qa
-                prod
+                $(imageTag)              # <<< CAMBIO
 
           - task: Docker@2
             displayName: 'Push imagen Frontend'
@@ -344,9 +253,7 @@ stages:
               command: push
               repository: $(acrLoginServer)/$(frontImageName)
               tags: |
-                $(imageTag)
-                qa
-                prod
+                $(imageTag)              # <<< CAMBIO
 
   # =========================
   # 4) DEPLOY QA — Web App for Containers
@@ -377,7 +284,7 @@ stages:
                       az webapp config container set \
                         --name $(webAppApiQA) \
                         --resource-group $(resourceGroup) \
-                        --docker-custom-image-name $(acrLoginServer)/$(backImageName):qa \
+                        --docker-custom-image-name $(acrLoginServer)/$(backImageName):$(imageTag) \   # <<< CAMBIO
                         --docker-registry-server-url https://$(acrLoginServer) \
                         --docker-registry-server-user $(acrName) \
                         --docker-registry-server-password $(az acr credential show --name $(acrName) --query "passwords[0].value" -o tsv)
@@ -420,7 +327,7 @@ stages:
                       az webapp config container set \
                         --name $(webAppFrontQA) \
                         --resource-group $(resourceGroup) \
-                        --docker-custom-image-name $(acrLoginServer)/$(frontImageName):qa \
+                        --docker-custom-image-name $(acrLoginServer)/$(frontImageName):$(imageTag) \   # <<< CAMBIO
                         --docker-registry-server-url https://$(acrLoginServer) \
                         --docker-registry-server-user $(acrName) \
                         --docker-registry-server-password $(az acr credential show --name $(acrName) --query "passwords[0].value" -o tsv)
@@ -431,13 +338,68 @@ stages:
                         --settings API_URL="https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net/api"
 
   # =========================
+  # 4.5) NUEVA STAGE: CYPRESS SOBRE QA ANTES DE PROD
+  # =========================
+  - stage: E2E_QA_Before_Prod           # <<< NUEVA STAGE
+    displayName: "E2E Cypress sobre QA antes de Prod"
+    dependsOn: Deploy_QA
+    condition: succeeded()
+    jobs:
+      - job: RunCypressAfterQA
+        displayName: "Cypress E2E contra FRONT QA desplegado"
+        pool: { vmImage: 'ubuntu-latest' }
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+
+          - task: NodeTool@0
+            inputs: { versionSpec: "20.x" }
+
+          - script: |
+              cd frontend
+              npm ci
+              # Ajustá la URL si tu front QA tiene otro hostname
+              CYPRESS_BASE_URL="https://cont-front-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net" \
+              npx cypress run
+            displayName: "Run Cypress E2E sobre QA"
+
+          - script: |
+              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
+              mkdir -p "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
+            displayName: "Asegurar carpetas Cypress (post-QA)"
+            condition: always()
+
+          - task: PublishTestResults@2
+            displayName: "Publicar resultados E2E QA (JUnit)"
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "frontend/cypress/results/*.xml"
+              testRunTitle: "Cypress E2E QA antes de PROD"
+            condition: succeededOrFailed()
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Artefacto: Cypress videos QA"
+            inputs:
+              ArtifactName: "cypress-videos-qa"
+              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/videos"
+            condition: always()
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Artefacto: Cypress screenshots QA"
+            inputs:
+              ArtifactName: "cypress-screens-qa"
+              PathtoPublish: "$(System.DefaultWorkingDirectory)/frontend/cypress/screenshots"
+            condition: always()
+
+  # =========================
   # 5) DEPLOY PROD — Web App for Containers (aprobación en Environment)
   # =========================
   - stage: Deploy_Prod
     displayName: "Deploy Producción"
-    dependsOn: Deploy_QA
+    dependsOn: E2E_QA_Before_Prod      # <<< CAMBIO: ahora depende de la stage de Cypress
     variables:
-      - group: VG_PROD   # Debe contener: DB_* y API_URL de producción (si preferís, podés setear URL explícita)
+      - group: VG_PROD   # Debe contener: DB_* y API_URL de producción
     jobs:
       - deployment: ProdDeploy
         displayName: 'Deploy a Producción'
@@ -459,7 +421,7 @@ stages:
                       az webapp config container set \
                         --name $(webAppApiPROD) \
                         --resource-group $(resourceGroup) \
-                        --docker-custom-image-name $(acrLoginServer)/$(backImageName):prod \
+                        --docker-custom-image-name $(acrLoginServer)/$(backImageName):$(imageTag) \   # <<< CAMBIO
                         --docker-registry-server-url https://$(acrLoginServer) \
                         --docker-registry-server-user $(acrName) \
                         --docker-registry-server-password $(az acr credential show --name $(acrName) --query "passwords[0].value" -o tsv)
@@ -501,7 +463,7 @@ stages:
                       az webapp config container set \
                         --name $(webAppFrontPROD) \
                         --resource-group $(resourceGroup) \
-                        --docker-custom-image-name $(acrLoginServer)/$(frontImageName):prod \
+                        --docker-custom-image-name $(acrLoginServer)/$(frontImageName):$(imageTag) \   # <<< CAMBIO
                         --docker-registry-server-url https://$(acrLoginServer) \
                         --docker-registry-server-user $(acrName) \
                         --docker-registry-server-password $(az acr credential show --name $(acrName) --query "passwords[0].value" -o tsv)
