@@ -360,8 +360,9 @@ stages:
               cd frontend
               npm ci
               # Ajustá la URL si tu front QA tiene otro hostname
-              CYPRESS_BASE_URL="https://cont-front-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net" \
+              CYPRESS_baseUrl="https://cont-front-qa-dvctbgbdfbbrfpbe.chilecentral-01.azurewebsites.net" \
               npx cypress run
+
             displayName: "Run Cypress E2E sobre QA"
 
           - script: |

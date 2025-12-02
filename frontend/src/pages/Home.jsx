@@ -46,6 +46,7 @@ export default function Home() {
           }}
         >
           Encontrá tus zapatillas favoritas al mejor precio y en un solo lugar.
+          anda?
         </p>
 
         <Link
