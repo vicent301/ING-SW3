@@ -14,13 +14,13 @@ resources:
 
 variables:
   # Service connections / Azure
-  ConnectedServiceName: 'ServiceConnectionAPP'     # si tu SC real es otro, cambialo
+  ConnectedServiceName: 'sc-azure-appweb'     
   azureServiceConnection: 'sc-azure-appweb'
   resourceGroup: 'gr-acr-app'
 
   # ACR
-  acrName: 'acreccommerce'
-  acrLoginServer: 'acreccommerce.azurecr.io'
+  acrName: 'acreccommerce1'
+  acrLoginServer: 'acreccommerce1.azurecr.io'
 
   # Nombres de imágenes (repos en ACR)
   backImageName: 'appweb-cont-back'
@@ -168,10 +168,10 @@ stages:
             displayName: "SonarCloud Prepare"
             inputs:
               SonarCloud: 'SonarClound'
-              organization: 'simons15'
+              organization: 'vicenmonzo38'
               scannerMode: 'CLI'
               configMode: 'manual'
-              cliProjectKey: 'simons15_api_ecommerce'
+              cliProjectKey: 'vicenmonzo38_api_ecommerce'
               cliProjectName: 'api_ecommerce'
 
           - task: SonarCloudAnalyze@2
@@ -302,7 +302,7 @@ stages:
 
                 # Health check backend QA
                 - script: |
-                    BACK_URL="https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net/api/healthz"
+                    BACK_URL="https://cont-api-qa-eghhdzg7gafrbjbx.mexicocentral-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..15}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
@@ -335,7 +335,7 @@ stages:
                       az webapp config appsettings set \
                         --name $(webAppFrontQA) \
                         --resource-group $(resourceGroup) \
-                        --settings API_URL="https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net/api"
+                        --settings API_URL="https://cont-api-qa-eghhdzg7gafrbjbx.mexicocentral-01.azurewebsites.net/api"
 
   # =========================
   # 4.5) NUEVA STAGE: CYPRESS SOBRE QA ANTES DE PROD
@@ -360,7 +360,7 @@ stages:
               cd frontend
               npm ci
               # Ajustá la URL si tu front QA tiene otro hostname
-              CYPRESS_baseUrl="https://cont-front-qa-dvctbgbdfbbrfpbe.chilecentral-01.azurewebsites.net" \
+              CYPRESS_baseUrl="https://cont-front-qa-hbcedpcqapg0d7bv.mexicocentral-01.azurewebsites.net" \
               npx cypress run
 
             displayName: "Run Cypress E2E sobre QA"
@@ -439,7 +439,7 @@ stages:
                           PORT=8080
 
                 - script: |
-                    BACK_URL="https://cont-api-prod-hqgzgzb2cdbegdag.chilecentral-01.azurewebsites.net/api/healthz"
+                    BACK_URL="https://cont-api-prod-dhdcgqf5aneehtas.mexicocentral-01.azurewebsites.net/api/healthz"
                     echo "Checking $BACK_URL"
                     for i in {1..15}; do
                       code=$(curl -s -o /dev/null -w "%{http_code}" "$BACK_URL")
@@ -472,4 +472,4 @@ stages:
                       az webapp config appsettings set \
                         --name $(webAppFrontPROD) \
                         --resource-group $(resourceGroup) \
-                        --settings API_URL="https://cont-api-prod-hqgzgzb2cdbegdag.chilecentral-01.azurewebsites.net/api"
+                        --settings API_URL="https://cont-api-prod-dhdcgqf5aneehtas.mexicocentral-01.azurewebsites.net/api"
