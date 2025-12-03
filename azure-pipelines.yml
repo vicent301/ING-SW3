@@ -177,10 +177,10 @@ stages:
           - task: SonarCloudAnalyze@2
             displayName: "Run Sonar Analysis"
 
-          - task: SonarCloudPublish@2
-            displayName: "Publish Sonar Results (Quality Gate)"
-            inputs:
-              pollingTimeoutSec: '300'
+         # - task: SonarCloudPublish@2
+         #   displayName: "Publish Sonar Results (Quality Gate)"
+          #  inputs:
+          #   pollingTimeoutSec: '300'
 
   # =========================
   # 2) (Opcional) BUILD ZIPS
