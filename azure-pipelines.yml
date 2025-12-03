@@ -15,6 +15,7 @@ resources:
 variables:
   # Service connections / Azure
   ConnectedServiceName: 'sc-azure-appweb'     
+  ConnectedServiceNameContainer: 'sc-azure-container'     
   azureServiceConnection: 'sc-azure-appweb'
   resourceGroup: 'gr-acr-app'
 
@@ -211,7 +212,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Login ACR'
             inputs:
-              azureSubscription: '$(ConnectedServiceName)'
+              azureSubscription: '$(ConnectedServiceNameContainer)'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
