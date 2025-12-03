@@ -1,0 +1,268 @@
+name: CI-CD Railway
+
+on:
+  push:
+    branches:
+      - main
+      - qa
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  # ==========================================================
+  # 1) TESTS FRONTEND (Vitest)
+  # ==========================================================
+  frontend-tests:
+    name: Pruebas Frontend (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install & Test Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx vitest run --coverage --reporter=junit --outputFile test-results.xml
+
+      - name: Publicar tests Frontend (JUnit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-tests
+          path: frontend/test-results.xml
+
+      - name: Subir coverage Frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+
+  # ==========================================================
+  # 2) TESTS BACKEND (Go)
+  # ==========================================================
+  backend-tests:
+    name: Pruebas Backend (Go)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Instalar herramientas reporte
+        working-directory: backend
+        run: |
+          go install github.com/jstemmer/go-junit-report@latest
+          go install github.com/boumenot/gocover-cobertura@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Run go test con coverage
+        working-directory: backend
+        run: |
+          PKGS="$(go list ./... \
+              | grep -v -E 'backend/tests/mocks|backend/testutil' \
+              | tr '\n' ' ')"
+          COVERPKG="$(echo "$PKGS" | tr ' ' ',' )"
+
+          echo "PKGS=$PKGS"
+          echo "COVERPKG=$COVERPKG"
+
+          go test -v -covermode=atomic -coverpkg="$COVERPKG" $PKGS -coverprofile=coverage.out | tee test.out
+          cat test.out | go-junit-report > junit-backend.xml
+
+          gocover-cobertura < coverage.out > cobertura.xml
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Subir tests Backend (JUnit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-tests
+          path: backend/junit-backend.xml
+
+      - name: Subir coverage Backend
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: |
+            backend/cobertura.xml
+            backend/coverage.out
+            backend/coverage.html
+
+  # ==========================================================
+  # 3) SONARCLOUD (depende de tests front + back)
+  # ==========================================================
+  sonarcloud:
+    name: SonarCloud (Frontend + Backend)
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Backend
+      - name: SonarCloud Backend
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=vicenmonzo38_api_ecommerce
+            -Dsonar.organization=vicenmonzo38
+            -Dsonar.projectBaseDir=backend
+            -Dsonar.sources=.
+            -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.inclusions=**/*.go
+            -Dsonar.exclusions=**/Dockerfile
+            -Dsonar.host.url=https://sonarcloud.io
+
+      # Frontend
+      - name: SonarCloud Frontend
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=vicenmonzo38_front_ecommerce
+            -Dsonar.organization=vicenmonzo38
+            -Dsonar.projectBaseDir=frontend
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx,**/*.test.js,**/*.test.jsx,**/__tests__/**
+            -Dsonar.exclusions=node_modules/**,dist/**,build/**,../backend/**,**/Dockerfile
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.host.url=https://sonarcloud.io
+
+  # ======================================================
+  # 4) BUILD & PUSH DOCKER (QA) + DEPLOY QA A RAILWAY
+  # ======================================================
+  docker-build-deploy-qa:
+    name: Build imágenes QA + Deploy QA
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- login a Docker Hub (opcional) ---
+      - name: Docker Login
+        if: ${{ secrets.DOCKERHUB_USER != '' }}
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
+
+      # Backend
+      - name: Build imagen Backend QA
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USER }}/appweb-cont-back:${{ github.run_number }} \
+            -f docker/api/Dockerfile \
+            backend
+
+      # Frontend
+      - name: Build imagen Frontend QA
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USER }}/appweb-cont-front:${{ github.run_number }} \
+            -f docker/front/Dockerfile \
+            frontend
+
+      - name: Push imágenes QA (opcional)
+        if: ${{ secrets.DOCKERHUB_USER != '' }}
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USER }}/appweb-cont-back:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USER }}/appweb-cont-front:${{ github.run_number }}
+
+      # --- Deploy QA a Railway ---
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy Backend QA to Railway
+        run: railway redeploy --service backend-qa --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy Frontend QA to Railway
+        run: railway redeploy --service frontend-qa --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # ======================================================
+  # 5) E2E CYPRESS CONTRA QA
+  # ======================================================
+  e2e-qa:
+    name: Cypress E2E QA
+    needs: docker-build-deploy-qa
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Esperar a que QA levante
+        run: sleep 50
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps + Cypress
+        working-directory: frontend
+        run: |
+          npm ci
+          npx cypress verify
+
+      - name: Run Cypress contra QA
+        working-directory: frontend
+        run: |
+          # Cambiá esta URL por la de TU front QA en Railway
+          BASE_URL="https://tu-front-qa.up.railway.app"
+          mkdir -p cypress/results
+          npx cypress run \
+            --spec "cypress/e2e/test-*.cy.js" \
+            --reporter junit \
+            --reporter-options "mochaFile=cypress/results/junit-[hash].xml,toConsole=true" \
+            --config baseUrl=$BASE_URL
+
+      - name: Subir resultados E2E
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results-qa
+          path: frontend/cypress/results
+
+  # ======================================================
+  # 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO)
+  # ======================================================
+  deploy-prod:
+    name: Deploy PROD Railway
+    needs: e2e-qa
+    runs-on: ubuntu-latest
+    environment:
+      name: PROD
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy Backend PROD to Railway
+        run: railway redeploy --service backend-prod --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy Frontend PROD to Railway
+        run: railway redeploy --service frontend-prod --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
