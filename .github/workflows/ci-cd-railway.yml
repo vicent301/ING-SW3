@@ -161,30 +161,49 @@ jobs:
   # 4) BUILD (QA) + DEPLOY QA A RAILWAY
   # ======================================================
   docker-build-deploy-qa:
-    name: Build imágenes QA + Deploy QA
+    name: Build imágenes QA + Push Docker Hub + Deploy QA
     needs: sonarcloud
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      # Backend
+       # Login a Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Backend - build con tags de Docker Hub
       - name: Build imagen Backend QA
         run: |
           docker build \
-            -t appweb-cont-back:${{ github.run_number }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:latest \
             -f backend/Dockerfile \
             backend
 
-      # Frontend
+      - name: Push imagen Backend a Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:latest
+
+      # Frontend - build con tags de Docker Hub
       - name: Build imagen Frontend QA
         run: |
           docker build \
-            -t appweb-cont-front:${{ github.run_number }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:latest \
             -f frontend/Dockerfile \
             frontend
 
-      # --- Deploy QA a Railway ---
+      - name: Push imagen Frontend a Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:latest
+
+      # --- Deploy QA a Railway (queda igual) ---
       - name: Install Railway CLI
         run: npm i -g @railway/cli
 
@@ -242,7 +261,7 @@ jobs:
           path: frontend/cypress/results
 
   # ======================================================
-  # 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO)
+  # 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO/IMAGEN)
   # ======================================================
   deploy-prod:
     name: Deploy PROD Railway
@@ -254,6 +273,34 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Login a Docker Hub (para usar/pushear tags de PROD)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Opcional: crear tags de PROD a partir de la misma imagen build de QA
+      - name: Tag & push Backend PROD image
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }}
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }} \
+                     ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:prod-${{ github.run_number }}
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }} \
+                     ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:prod
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:prod-${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:prod
+
+      - name: Tag & push Frontend PROD image
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }}
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }} \
+                     ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:prod-${{ github.run_number }}
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }} \
+                     ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:prod
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:prod-${{ github.run_number }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:prod
 
       - name: Install Railway CLI
         run: npm i -g @railway/cli
