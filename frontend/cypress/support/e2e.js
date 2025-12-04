@@ -17,7 +17,7 @@
 import './commands'
 // Comando para login por API y dejar token en localStorage
 Cypress.Commands.add('loginByApi', () => {
-  const api = 'https://cont-api-qa-csgneycheuckhnbh.chilecentral-01.azurewebsites.net';
+  const api = 'https://backendqa-production.up.railway.app';
 
   const email = Cypress.env('email') || 'simon@example.com';
   const password = Cypress.env('password') || 'simon123';
