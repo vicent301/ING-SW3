@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.455" tests="1" failures="1">
+  <testsuite name="Root Suite" timestamp="2025-12-04T19:43:55" tests="0" file="cypress\e2e\cart-update.cy.js" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="Carrito - Actualizar cantidad (home -&gt; /products -&gt; carrito)" timestamp="2025-12-04T19:43:55" tests="1" time="0.454" failures="1">
+    <testcase name="Carrito - Actualizar cantidad (home -&gt; /products -&gt; carrito) &quot;before each&quot; hook for &quot;agrega otra unidad del mismo producto y el total aumenta&quot;" time="0.000" classname="&quot;before each&quot; hook for &quot;agrega otra unidad del mismo producto y el total aumenta&quot;">
+      <failure message="expected 401 to be one of [ 200, 201 ]
+
+Because this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `Carrito - Actualizar cantid...`" type="AssertionError"><![CDATA[AssertionError: expected 401 to be one of [ 200, 201 ]
+
+Because this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `Carrito - Actualizar cantid...`
+    at Context.eval (webpack://frontend/./cypress/support/e2e.js:34:29)
+    at getRet (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122341:20)
+    at tryCatcher (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)
+    at Promise.attempt.Promise.try (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:4285:29)
+    at Context.thenFn (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122352:66)
+    at Context.then (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122603:21)]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

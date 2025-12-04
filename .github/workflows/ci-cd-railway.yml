@@ -199,7 +199,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Esperar a que QA levante
-        run: sleep 50
+        run: sleep 5
 
       - name: Setup Node
         uses: actions/setup-node@v4
