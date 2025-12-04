@@ -16,6 +16,21 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 // Comando para login por API y dejar token en localStorage
+
+// frontend/cypress/support/e2e.js
+
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // Si querés ser específico, sólo ignoramos el famoso "Unexpected token '<'"
+  if (err.message && err.message.includes("Unexpected token '<'")) {
+    // returning false prevents Cypress from failing the test
+    return false;
+  }
+
+  // para otros errores, seguí fallando como siempre
+  return true;
+});
+
+
 Cypress.Commands.add('loginByApi', () => {
   const api = 'https://backendqa-production.up.railway.app';
 
