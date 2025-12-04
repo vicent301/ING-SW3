@@ -177,13 +177,11 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy Backend QA to Railway
-        working-directory: backend
         run: railway up --service backend-qa --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend QA to Railway
-        working-directory: frontend
         run: railway up --service frontend-qa --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -249,13 +247,11 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy Backend PROD to Railway
-        working-directory: backend
         run: railway up --service backend-prod --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend PROD to Railway
-        working-directory: frontend
         run: railway up --service frontend-prod --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
