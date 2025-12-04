@@ -67,9 +67,12 @@ jobs:
           go install github.com/boumenot/gocover-cobertura@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
+      # ******* PASO CON FIX: si falla go test, falla el job *******
       - name: Run go test con coverage
         working-directory: backend
         run: |
+          set -o pipefail
+
           PKGS="$(go list ./... \
               | grep -v -E 'backend/tests/mocks|backend/testutil' \
               | tr '\n' ' ')"
@@ -79,10 +82,19 @@ jobs:
           echo "COVERPKG=$COVERPKG"
 
           go test -v -covermode=atomic -coverpkg="$COVERPKG" $PKGS -coverprofile=coverage.out | tee test.out
+          TEST_EXIT=${PIPESTATUS[0]}
+
           cat test.out | go-junit-report > junit-backend.xml
 
-          gocover-cobertura < coverage.out > cobertura.xml
-          go tool cover -html=coverage.out -o coverage.html
+          if [ "$TEST_EXIT" -eq 0 ]; then
+            gocover-cobertura < coverage.out > cobertura.xml
+            go tool cover -html=coverage.out -o coverage.html
+          else
+            echo "Tests fallaron, se omite generación de cobertura."
+          fi
+
+          exit $TEST_EXIT
+      # ********************************************************
 
       - name: Subir tests Backend (JUnit)
         uses: actions/upload-artifact@v4
