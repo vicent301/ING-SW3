@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="1.174" tests="1" failures="1">
+  <testsuite name="Root Suite" timestamp="2025-12-04T19:23:19" tests="0" file="cypress\e2e\cart-create.cy.js" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="Carrito - Crear ítem (via Ver Catálogo)" timestamp="2025-12-04T19:23:19" tests="1" time="1.173" failures="1">
+    <testcase name="Carrito - Crear ítem (via Ver Catálogo) &quot;before each&quot; hook for &quot;abre catálogo y agrega un producto al carrito&quot;" time="0.000" classname="&quot;before each&quot; hook for &quot;abre catálogo y agrega un producto al carrito&quot;">
+      <failure message="expected 401 to be one of [ 200, 201 ]
+
+Because this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `Carrito - Crear ítem (via V...`" type="AssertionError"><![CDATA[AssertionError: expected 401 to be one of [ 200, 201 ]
+
+Because this error occurred during a `before each` hook we are skipping the remaining tests in the current suite: `Carrito - Crear ítem (via V...`
+    at Context.eval (webpack://frontend/./cypress/support/e2e.js:34:29)
+    at getRet (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122341:20)
+    at tryCatcher (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)
+    at Promise.attempt.Promise.try (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:4285:29)
+    at Context.thenFn (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122352:66)
+    at Context.then (https://frontend-qa-production-d3a6.up.railway.app/__cypress/runner/cypress_runner.js:122603:21)]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

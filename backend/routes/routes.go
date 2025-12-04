@@ -16,17 +16,11 @@ func SetupRouter(prodSvc services.ProductServicePort) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"https://cont-front-qa-hbcedpcqapg0d7bv.mexicocentral-01.azurewebsites.net",
-			"https://cont-front-prod-g2bwfyctg4enhzcu.mexicocentral-01.azurewebsites.net",
-			"https://frontend-qa-production-d3a6.up.railway.app",
-			"https://frontend-prod-production-9ba0.up.railway.app",
-			"http://localhost:5173",
-		},
+		AllowOrigins:     true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}))
 
