@@ -119,8 +119,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=vicenmonzo38_api_ecommerce
-            -Dsonar.organization=vicenmonzo38
+            -Dsonar.projectKey=vicent301_ING-SW3
+            -Dsonar.organization=vicent301
             -Dsonar.projectBaseDir=backend
             -Dsonar.sources=.
             -Dsonar.go.coverage.reportPaths=coverage.out
@@ -135,8 +135,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=vicenmonzo38_front_ecommerce
-            -Dsonar.organization=vicenmonzo38
+            -Dsonar.projectKey=vicent301_ING-SW3
+            -Dsonar.organization=vicent301
             -Dsonar.projectBaseDir=frontend
             -Dsonar.sources=src
             -Dsonar.tests=src
