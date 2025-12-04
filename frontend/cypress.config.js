@@ -3,7 +3,7 @@ const { defineConfig } = require('cypress');
 module.exports = defineConfig({
   e2e: {
     // Usa directamente la URL QA si no se define CYPRESS_BASE_URL
-    baseUrl: process.env.CYPRESS_BASE_URL || 'https://cont-front-qa-dvctbgbdfbbrfpbe.chilecentral-01.azurewebsites.net',
+    baseUrl: process.env.CYPRESS_BASE_URL || 'https://frontend-qa-production-d3a6.up.railway.app',
     
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'cypress/support/e2e.js',
