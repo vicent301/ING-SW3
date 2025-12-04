@@ -25,7 +25,7 @@ export default function Home() {
 
       {/* 🔹 Contenido visible */}
       <div className="relative z-10 max-w-3xl mx-auto px-6 text-center"
-     style={{ color: "rgb(0,230,60)" }}> 
+     style={{ color: "rgb(250,130,60)" }}> 
 
         <h1
           className="text-6xl md:text-7xl font-bold mb-6 drop-shadow-lg"

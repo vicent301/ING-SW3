@@ -148,7 +148,7 @@ jobs:
   # ======================================================
   # 4) BUILD (QA) + DEPLOY QA A RAILWAY
   # ======================================================
-  docker-build-deploy-qa:
+    docker-build-deploy-qa:
     name: Build imágenes QA + Deploy QA
     needs: sonarcloud
     runs-on: ubuntu-latest
@@ -156,7 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Backend
+      # (Opcional) build backend y frontend sólo para verificar que los Dockerfile compilan
       - name: Build imagen Backend QA
         run: |
           docker build \
@@ -164,7 +164,6 @@ jobs:
             -f backend/Dockerfile \
             backend
 
-      # Frontend
       - name: Build imagen Frontend QA
         run: |
           docker build \
@@ -172,19 +171,22 @@ jobs:
             -f frontend/Dockerfile \
             frontend
 
-      # --- Deploy QA a Railway ---
+      # --- Deploy QA a Railway usando el código de ESTE commit ---
       - name: Install Railway CLI
         run: npm i -g @railway/cli
 
       - name: Deploy Backend QA to Railway
-        run: railway redeploy --service backend-qa --yes
+        working-directory: backend
+        run: railway up --service backend-qa --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend QA to Railway
-        run: railway redeploy --service frontend-qa --yes
+        working-directory: frontend
+        run: railway up --service frontend-qa --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
 
 
   # ======================================================
@@ -232,7 +234,7 @@ jobs:
   # ======================================================
   # 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO)
   # ======================================================
-  deploy-prod:
+    deploy-prod:
     name: Deploy PROD Railway
     needs: e2e-qa
     runs-on: ubuntu-latest
@@ -247,11 +249,13 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy Backend PROD to Railway
-        run: railway redeploy --service backend-prod --yes
+        working-directory: backend
+        run: railway up --service backend-prod --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend PROD to Railway
-        run: railway redeploy --service frontend-prod --yes
+        working-directory: frontend
+        run: railway up --service frontend-prod --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
