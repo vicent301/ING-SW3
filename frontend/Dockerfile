@@ -1,32 +1,35 @@
-# ---- Build (solo assets estáticos) ----
-FROM node:20-alpine AS builder
+# ===== ETAPA DE BUILD =====
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# El contexto es frontend/, por eso estos archivos existen:
+# Dependencias
 COPY package*.json ./
 RUN npm ci
 
-# (opcional) build arg para fallback de Vite
+# Si usás VITE_API_URL en el código, la pasamos como ARG
 ARG VITE_API_URL=""
 ENV VITE_API_URL=${VITE_API_URL}
 
+# Código fuente
 COPY . .
+
+# Build de producción (Vite)
 RUN npm run build
 
-# ---- Runtime (nginx + env.js inyectado al iniciar) ----
-FROM nginx:alpine
+# ===== ETAPA DE RUN =====
+FROM node:20-alpine
+WORKDIR /app
 
-# Nginx para SPA (el archivo debe estar en frontend/nginx.conf)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Servidor estático para los archivos de Vite
+RUN npm install -g serve
 
-# Archivos estáticos compilados
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copiamos el build
+COPY --from=build /app/dist ./dist
 
-# Script de arranque que genera env.js según $API_URL (debe estar en frontend/entrypoint.sh)
-COPY entrypoint.sh /docker-entrypoint.d/99-generate-env.sh
-RUN chmod +x /docker-entrypoint.d/99-generate-env.sh
+# Railway setea PORT, pero por si acaso dejamos un default
+ENV PORT=4173
 
-ENV API_URL=""
-EXPOSE 80
+EXPOSE 4173
 
-
+# IMPORTANTÍSIMO: escuchar en ${PORT}, que es lo que usa Railway
+CMD ["sh", "-c", "serve -s dist -l ${PORT}"]

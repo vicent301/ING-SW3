@@ -226,7 +226,7 @@ jobs:
         working-directory: frontend
         run: |
           # Cambiá esta URL por la de TU front QA en Railway
-          BASE_URL="https://tu-front-qa.up.railway.app"
+          BASE_URL="https://frontend-qa-production-d3a6.up.railway.app"
           mkdir -p cypress/results
           npx cypress run \
             --spec "cypress/e2e/test-*.cy.js" \
