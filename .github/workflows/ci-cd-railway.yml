@@ -177,14 +177,15 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy Backend QA to Railway
-        run: railway redeploy --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend-qa --yes
+        run: railway redeploy --service backend-qa --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend QA to Railway
-        run: railway redeploy --project ${{ secrets.RAILWAY_PROJECT_ID }} --service frontend-qa --yes
+        run: railway redeploy --service frontend-qa --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
 
   # ======================================================
   # 5) E2E CYPRESS CONTRA QA
@@ -246,11 +247,11 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy Backend PROD to Railway
-        run: railway redeploy --project ${{ secrets.RAILWAY_PROJECT_ID }} --service backend-prod --yes
+        run: railway redeploy --service backend-prod --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend PROD to Railway
-        run: railway redeploy --project ${{ secrets.RAILWAY_PROJECT_ID }} --service frontend-prod --yes
+        run: railway redeploy --service frontend-prod --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
