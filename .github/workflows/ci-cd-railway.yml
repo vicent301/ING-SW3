@@ -146,7 +146,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
 
   # ======================================================
-  # 4) BUILD & PUSH DOCKER (QA) + DEPLOY QA A RAILWAY
+  # 4) BUILD (QA) + DEPLOY QA A RAILWAY
   # ======================================================
   docker-build-deploy-qa:
     name: Build imágenes QA + Deploy QA
@@ -156,32 +156,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --- login a Docker Hub (opcional) ---
-      - name: Docker Login
-        if: ${{ secrets.DOCKERHUB_USER != '' }}
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
-
       # Backend
       - name: Build imagen Backend QA
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USER }}/appweb-cont-back:${{ github.run_number }} \
-            -f docker/api/Dockerfile \
+            -t appweb-cont-back:${{ github.run_number }} \
+            -f backend/Dockerfile \
             backend
 
       # Frontend
       - name: Build imagen Frontend QA
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USER }}/appweb-cont-front:${{ github.run_number }} \
-            -f docker/front/Dockerfile \
+            -t appweb-cont-front:${{ github.run_number }} \
+            -f frontend/Dockerfile \
             frontend
-
-      - name: Push imágenes QA (opcional)
-        if: ${{ secrets.DOCKERHUB_USER != '' }}
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USER }}/appweb-cont-back:${{ github.run_number }}
-          docker push ${{ secrets.DOCKERHUB_USER }}/appweb-cont-front:${{ github.run_number }}
 
       # --- Deploy QA a Railway ---
       - name: Install Railway CLI
@@ -196,6 +185,7 @@ jobs:
         run: railway redeploy --service frontend-qa --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
 
   # ======================================================
   # 5) E2E CYPRESS CONTRA QA
@@ -225,7 +215,6 @@ jobs:
       - name: Run Cypress contra QA
         working-directory: frontend
         run: |
-          # Cambiá esta URL por la de TU front QA en Railway
           BASE_URL="https://frontend-qa-production-d3a6.up.railway.app"
           mkdir -p cypress/results
           npx cypress run \

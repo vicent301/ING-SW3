@@ -1,14 +1,15 @@
 package routes
 
 import (
-	"backend/controller" // <-- corregido
+	controllers "backend/controller" // <-- corregido
 	"backend/middleware"
 	"backend/services"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(prodSvc services.ProductServicePort) *gin.Engine {
@@ -18,6 +19,8 @@ func SetupRouter(prodSvc services.ProductServicePort) *gin.Engine {
 		AllowOrigins: []string{
 			"https://cont-front-qa-hbcedpcqapg0d7bv.mexicocentral-01.azurewebsites.net",
 			"https://cont-front-prod-g2bwfyctg4enhzcu.mexicocentral-01.azurewebsites.net",
+			"https://frontend-qa-production-d3a6.up.railway.app",
+			"https://frontend-prod-production-9ba0.up.railway.app",
 			"http://localhost:5173",
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
