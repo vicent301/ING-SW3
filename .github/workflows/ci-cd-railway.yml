@@ -179,28 +179,24 @@ jobs:
       - name: Build imagen Backend QA
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }} \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:latest \
             -f backend/Dockerfile \
             backend
 
       - name: Push imagen Backend a Docker Hub
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-back:latest
 
       # Frontend - build con tags de Docker Hub
       - name: Build imagen Frontend QA
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }} \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:latest \
             -f frontend/Dockerfile \
             frontend
 
       - name: Push imagen Frontend a Docker Hub
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:${{ github.run_number }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/appweb-cont-front:latest
 
       # --- Deploy QA a Railway (queda igual) ---
