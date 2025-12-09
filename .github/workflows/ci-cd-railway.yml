@@ -261,28 +261,28 @@ jobs:
           path: frontend/cypress/results
 
   # ======================================================
-# 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO)
-# ======================================================
-deploy-prod:
-  name: Deploy PROD Railway
-  needs: e2e-qa
-  runs-on: ubuntu-latest
-  environment:
-    name: PROD
-  if: github.ref == 'refs/heads/main'
+  # 6) DEPLOY PROD A RAILWAY (MISMA VERSIÓN DE CÓDIGO/IMAGEN)
+  # ======================================================
+  deploy-prod:
+    name: Deploy PROD Railway
+    needs: e2e-qa
+    runs-on: ubuntu-latest
+    environment:
+      name: PROD
+    if: github.ref == 'refs/heads/main'
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Install Railway CLI
-      run: npm i -g @railway/cli
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
 
-    - name: Deploy Backend PROD to Railway
-      run: railway up --service backend-prod --detach
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy Backend PROD to Railway
+        run: railway up --service backend-prod --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-    - name: Deploy Frontend PROD to Railway
-      run: railway up --service frontend-prod --detach
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy Frontend PROD to Railway
+        run: railway up --service frontend-prod --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
